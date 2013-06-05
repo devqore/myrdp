@@ -1,22 +1,25 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import QObject, SIGNAL, QProcess, QString, QStringList
-from PyQt4.QtGui import QMainWindow, QMenu
+from PyQt4.QtCore import *#QObject, SIGNAL, QProcess, QString, QStringList, QSettings, QUrl
+from PyQt4.QtGui import *#QMainWindow, QMenu, QWidget, QMessageBox, QDesktopServices, QDialog
 from mytabwidget import MyTabWidget
 from config import Config
 from myrdp_ui import Ui_MainWindow
+from quickconnectdialog import QuickConnectDialog
 
 import itertools
 
+
 class MyRDP(QMainWindow):
-    def __init__(self):
+    def __init__(self, config):
         super(MyRDP, self).__init__()
-        self.config = Config()
+        self.configFile = config
+        self.config = Config(self.configFile)
         self.initUi()
         self.setMenu()
         #to hold unique {hostId : proc}
         self.procs = {}
-        self.setMouseTracking(True)
-        
+        self.restoreSettings()
+    
     def initUi(self):
         self.ui = Ui_MainWindow()
         ui = self.ui
@@ -33,16 +36,30 @@ class MyRDP(QMainWindow):
         QObject.connect(ui.hostsList, SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.slotConnectHost)
         QObject.connect(ui.hostsList, SIGNAL("itemClicked(QListWidgetItem*)"), self.slotShowHost)
         QObject.connect(self.tabWidget, SIGNAL("tabClosed(QString)"), self.slotOnTabClosed)
+    
+    #Fix to release keyboard from QX11EmbedContainer, when we leave widget through wm border      
+    def leaveEvent(self, event):
+        keyG = QWidget.keyboardGrabber()
+        if keyG is not None:
+            keyG.releaseKeyboard()
+        event.accept()#needed?
 
     def setMenu(self):
         ui = self.ui
         menuList = QMenu()
-        menuList.addAction("Reread config.ini", self.slotRefreshList)
+        menuList.addAction("Reread config", self.slotRefreshList)
+        menuList.addAction("Open config", self.openConfigFile)
+        menuList.addAction("Quick connect", self.quickConnect)
         ui.menu.setMenu(menuList)
 #        QObject.connect(ui.menu, SIGNAL("clicked()"), self.slotRefreshList)
     
+    
+    def openConfigFile(self):
+        desk = QDesktopServices()
+        desk.openUrl(QUrl("file://%s" % self.config.filePath))
+    
     def slotRefreshList(self):
-        self.config = Config()
+        self.config = Config(self.configFile)
         self.ui.hostsList.clear()
         self.setHostList()
        
@@ -56,14 +73,54 @@ class MyRDP(QMainWindow):
 
     def slotConnectHost(self, item):     
         self.tabPage = self.tabWidget.createTab(item)
-               
+        
         hostId = str(item.text())
         if hostId in self.procs.keys():
             proc = self.procs[hostId]
             proc.kill()
         
-        #@todo: create some function to set config, this mess is to long
         hostOptionsDict = self.config.getHostOptions(hostId)
+        
+        execCmd, opts = self.getCmd(hostOptionsDict)
+        
+        self.startProcess(hostId, execCmd, opts)
+    
+    def quickConnect(self):      
+        qc = QuickConnectDialog()
+        ret = qc.exec_()
+        
+        if ret == QDialog.Rejected:
+            return
+
+        #to add section in config
+        quickHost = dict()
+        
+        #@todo: add validation in qdialog! host line edit cannot be empty
+        #@todo: add checkbox to add element to config.ini
+        #@todo: propably move all qc.ui...text() to quickconnectdialog class
+        ip = qc.ui.host.text()
+        quickHost["ip"] = str(ip) 
+        hostName = self.config.getUniqueHost(ip)#section name
+        
+        #could be a function
+        user = qc.ui.user.text()
+        if user != "":
+            quickHost["u"] = user
+             
+        passwd = qc.ui.password.text()
+        if passwd != "":
+            quickHost["p"] = passwd
+            
+        self.config.addHost(hostName, quickHost)
+        
+        #add item to host list and emit item clicked 
+        item = QListWidgetItem(hostName)
+        item.setBackground(Qt.gray)
+        self.ui.hostsList.addItem(item)      
+        self.ui.hostsList.emit(SIGNAL("itemDoubleClicked(QListWidgetItem*)"), item)
+       
+        
+    def getCmd(self, hostOptionsDict):
         #ip allways as last argument
         try:
             ip = hostOptionsDict.pop("ip")
@@ -94,8 +151,10 @@ class MyRDP(QMainWindow):
         opts.extend(["-X", QString.number(winId)])
 
         #at least append id        
-        opts.append(ip)
-        
+        opts.append(ip)        
+        return execCmd, opts
+    
+    def startProcess(self, hostId, execCmd, opts):
         proc = QProcess()
         #@todo: searching processes, with dictionary is monkey idea
 #        proc.setObjectName(u"proc_%s" % hostId)
@@ -107,18 +166,40 @@ class MyRDP(QMainWindow):
         proc.setProcessChannelMode(QProcess.MergedChannels)
         proc.start(execCmd, QStringList(opts))
         self.procs[hostId] = proc
-        
-#    def slotRead(self):
-#        print "from slog", self.proc.readAllStandardOutput()
+
+    def saveSettings(self):
+        settings = QSettings("MyRDP");
+        settings.setValue("geometry", self.saveGeometry());
+        settings.setValue("windowState", self.saveState());
+
+    def restoreSettings(self):
+        settings = QSettings("MyRDP");
+        self.restoreGeometry(settings.value("geometry").toByteArray());
+        self.restoreState(settings.value("windowState").toByteArray());
 
     def closeEvent(self, event):
-        #@bug: workaraound for bug when closing window and few tabs are opened with connected rdp 
+        #@todo: ask on close when has tabs should go as option, by default turned on
+        if self.tabWidget.count() == 0:
+            self.saveSettings()
+            return
+               
+        msgBox = QMessageBox(self, text="Are you soure do you want to quit?")
+        msgBox.setWindowTitle("Exit confirmation")
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        ret = msgBox.exec_()
+        if ret == QMessageBox.Cancel:
+            event.ignore()
+            return
+        
+        self.saveSettings()
+        #@bug: workaraound for bug when closing window and few tabs are opened with connected rdp
         for i in self.procs.values():
             try:
                 i.kill()
             except:
                 pass
         event.accept()
+        
         
     def slotOnWigetClosed(self, title):
         self.tabWidget.detached.pop(u"%s" % title)

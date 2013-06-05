@@ -4,6 +4,18 @@ from PyQt4.QtGui import *
 #QTabWidget, QWidget, QVBoxLayout, QTextEdit, QFrame, QMenu, QDockWidget
 #from PyQt4.QtGui import QTextCursor
 
+class X11Embed(QX11EmbedContainer):
+    def __init__(self, parent=None):
+        super(X11Embed, self).__init__(parent)
+        self.setMouseTracking(True)
+        self.setMinimumSize(200, 200)
+#         self.installEventFilter(self)
+    #leaveEvent not allways work for e.g when we out from MyRDP trough border, or without mosue
+    #so we need, also releaseKeyboard on focusChanged in QApplication
+#     def leaveEvent(self, event):
+#         self.releaseKeyboard()
+#         event.accept()
+
 class PageTab(QWidget):
     widgetClosed = pyqtSignal("QString")
     def __init__(self, parent=None):
@@ -33,8 +45,9 @@ class PageTab(QWidget):
         
         #to embed rdesktop, if we use QWidget, there is some problems with
         #shortcuts (for e.g. in xfwm4), with QX11EmbedContainer looks good 
-        self.x11 = QX11EmbedContainer(self)
-        self.x11.setMinimumSize(200, 200)
+        #self.x11 = QX11EmbedContainer(self)
+        #self.x11 = QX11EmbedContainer(self)
+        self.x11 = X11Embed(self)
         
 #    def autoScroll(self):
 #        c = self.textEdit.textCursor()
@@ -46,10 +59,8 @@ class PageTab(QWidget):
         self.widgetClosed.emit(title)
         event.accept()
         self.deleteLater()
-        
-#        return QWidget.closeEvent(self, *args, **kwargs)(self):
-#            print "closed"
-        
+
+
     def setSize(self):
         """ Sets size of QX11EmbedContainer, because QX11 is not in layout, but
             textEdit is. Returns size of textEdit area wich will be used in rdesktop
@@ -86,7 +97,7 @@ class MyTabWidget(QTabWidget):
     def __init__(self):
         super(MyTabWidget, self).__init__()
         self.setTabsClosable(True)
-
+        
         QObject.connect(self, SIGNAL("tabCloseRequested(int)"), self.slotCloseTab)
         self.setStyleSheet("""QTabBar::tab:selected, QTabBar::tab:hover { 
                               background: 
