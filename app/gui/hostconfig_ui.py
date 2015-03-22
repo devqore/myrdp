@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_HostConfig(object):
     def setupUi(self, HostConfig):
         HostConfig.setObjectName("HostConfig")
-        HostConfig.resize(270, 190)
+        HostConfig.resize(270, 198)
         self.verticalLayout = QtWidgets.QVBoxLayout(HostConfig)
         self.verticalLayout.setObjectName("verticalLayout")
         self.name = QtWidgets.QLineEdit(HostConfig)
@@ -25,6 +25,7 @@ class Ui_HostConfig(object):
         self.user.setObjectName("user")
         self.verticalLayout.addWidget(self.user)
         self.password = QtWidgets.QLineEdit(HostConfig)
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password.setObjectName("password")
         self.verticalLayout.addWidget(self.password)
         self.errorArea = QtWidgets.QVBoxLayout()
