@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="ico">
-    <file>ico/myrdp.svg</file>
+    <file>myrdp.svg</file>
   </qresource>
 </RCC>

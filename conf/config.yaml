@@ -1,0 +1,12 @@
+global:
+  client: xfreerdp
+  connection_string: sqlite:///myrdp.sqlite
+  log_level: debug
+
+xfreerdp:
+  executable: xfreerdp
+  args: "+clipboard -sec-nla +drives /cert-ignore"
+
+rdesktop:
+  executable: rdesktop
+  args: ""

@@ -1,39 +1,37 @@
 # -*- coding: utf-8 -*-
-#from PyQt4 import QtCore
-#from PyQt4.uic.Compiler.qtproxies import QtCore
-from PyQt4.QtGui import QApplication, QWidget
-from myrdp import MyRDP 
-from mytabwidget import X11Embed
+from PyQt5.QtWidgets import QWidget, QApplication
 import sys
-#import sip #sip needed to build with bb-ffreeze
 
-#@todo: opt parse
+from app.gui.mainwindow import MainWindow
+from app.gui.mytabwidget import X11Embed
+
+# import sip # sip needed to build with bb-ffreeze
 from argparse import ArgumentParser
+
 
 def argParser():
     parser = ArgumentParser(description='MyRDP')    
-    parser.add_argument("-c", "--config", default="config.ini", help='config file (default: config.ini)')    
+    parser.add_argument("-c", "--config", default="config.yaml", help='config file (default: config.ini)')
     return parser.parse_args()
 
 
-from PyQt4.QtCore import QObject, SIGNAL
 def focusChanged(lostFocus, hasFocus):
     hasFocusType = type(hasFocus)
-    if hasFocus is None or hasFocusType != X11Embed:#for e.g. focus is out from application, or is another widget
-        keyG = QWidget.keyboardGrabber() #find keyboardGraber and releaseKeyboard
+    if hasFocus is None or hasFocusType != X11Embed: # for e.g. focus is out from application, or is another widget
+        keyG = QWidget.keyboardGrabber()  # find keyboardGraber and releaseKeyboard
         if keyG is not None:
             keyG.releaseKeyboard()            
     elif hasFocusType == X11Embed:
-        #hasFocus.underMouse() with X11EmbedContainter underMouse doesnt work :(
+        # hasFocus.underMouse() with X11EmbedContainter underMouse doesnt work :(
         hasFocus.grabKeyboard()
     
 
 if __name__ == "__main__":   
     args = argParser()
     app = QApplication(sys.argv)
-    
-    QObject.connect(app, SIGNAL("focusChanged(QWidget*, QWidget*)"), focusChanged)
-    
-    mw = MyRDP(args.config)   
+
+    app.focusChanged.connect(focusChanged)
+
+    mw = MainWindow(args.config)
     mw.show()
     sys.exit(app.exec_())
