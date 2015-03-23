@@ -42,12 +42,10 @@ class HostConfigDialog(QDialog):
 
     def acceptEditHost(self, host):
         attributesDict = self.collectFieldsValues()
-        for key, value in attributesDict.items():
-            try:
-                setattr(host, key, value)
-            except Exception as e:
-                self.setErrorLabel(e.message)
-                break
+        try:
+            self.hosts.updateHostValues(host, attributesDict)
+        except Exception as e:
+            self.setErrorLabel(e.message)
         else:
             self.accept()
 

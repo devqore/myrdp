@@ -20,6 +20,13 @@ class Hosts(object):
         hostsList = sum(self._db.session.query(HostTable.name), ())
         return sorted(hostsList)
 
+    def updateHostValues(self, host, values):
+        """
+        :param host: host object
+        :param values: Dictionary {attribute: value}
+        """
+        self._db.updateObject(host, values)
+
     def create(self, name, address, user=None, password=None):
         host = HostTable(name=name, address=address, user=user, password=password)
         self._db.createObject(host)

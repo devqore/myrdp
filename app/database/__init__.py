@@ -54,3 +54,8 @@ class Database(object):
     def deleteObject(self, schemaObject):
         self.session.delete(schemaObject)
         self.tryCommit()
+
+    def updateObject(self, schemaObject, values):
+        for attr, value in values.items():
+            setattr(schemaObject, attr, value)
+        self.tryCommit()
