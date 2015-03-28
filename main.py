@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt4.QtGui import QWidget, QApplication
 import sys
 
 from app.gui.mainwindow import MainWindow
@@ -20,11 +20,9 @@ def focusChanged(lostFocus, hasFocus):
     if hasFocus is None or hasFocusType != X11Embed: # for e.g. focus is out from application, or is another widget
         keyG = QWidget.keyboardGrabber()  # find keyboardGraber and releaseKeyboard
         if keyG is not None:
-            keyG.releaseKeyboard()            
+            keyG.releaseKeyboard()
     elif hasFocusType == X11Embed:
-        # hasFocus.underMouse() with X11EmbedContainter underMouse doesnt work :(
         hasFocus.grabKeyboard()
-    
 
 if __name__ == "__main__":   
     args = argParser()

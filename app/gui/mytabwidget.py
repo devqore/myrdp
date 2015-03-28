@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSignal, Qt, qDebug
-from PyQt5 import QtWidgets
+from PyQt4.QtCore import pyqtSignal, Qt, qDebug
+from PyQt4 import QtGui
 
 
-class X11Embed(QtWidgets.QWidget):
+class X11Embed(QtGui.QX11EmbedContainer):
     def __init__(self, parent=None):
         super(X11Embed, self).__init__(parent)
         self.setMouseTracking(True)
         self.setMinimumSize(200, 200)
 
 
-class PageTab(QtWidgets.QWidget):
+class PageTab(QtGui.QWidget):
     widgetClosed = pyqtSignal("QString")
 
     def __init__(self, parent=None):
@@ -18,7 +18,7 @@ class PageTab(QtWidgets.QWidget):
         # used for check if process has been stoped
         self.lastState = None
         
-        self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout = QtGui.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         # bellow each rdesktop instance is text area with stdout/stderr debug
@@ -28,9 +28,9 @@ class PageTab(QtWidgets.QWidget):
         # than display area, you can see the text ;) looks buggy but at this (any:P) time
         # i think that's not important :)
 
-        self.textEdit = QtWidgets.QTextEdit(self)
+        self.textEdit = QtGui.QTextEdit(self)
         self.textEdit.setReadOnly(True)
-        self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.textEdit.setFrameShape(QtGui.QFrame.NoFrame)
         self.textEdit.setStyleSheet("background-color:transparent;")
         
         self.textEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -40,9 +40,8 @@ class PageTab(QtWidgets.QWidget):
         
         # to embed rdesktop, if we use QWidget, there is some problems with
         # shortcuts (for e.g. in xfwm4), with QX11EmbedContainer looks good 
-        # self.x11 = QX11EmbedContainer(self)
         self.x11 = X11Embed(self)
-        
+
     def closeEvent(self, event):
         title = self.windowTitle()
         self.widgetClosed.emit(title)
@@ -76,7 +75,7 @@ class PageTab(QtWidgets.QWidget):
         return self.windowTitle()
 
 
-class MyTabWidget(QtWidgets.QTabWidget):
+class MyTabWidget(QtGui.QTabWidget):
     # to communicate with main window, and send signal with tabName
     tabClosed = pyqtSignal("QString")
     
@@ -104,7 +103,7 @@ class MyTabWidget(QtWidgets.QTabWidget):
         self.tab.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tab.customContextMenuRequested.connect(self.showContextMenu)
 
-        self.popMenu = QtWidgets.QMenu(self)
+        self.popMenu = QtGui.QMenu(self)
         self.popMenu.addAction("Detach tab", self.detach)
 #        self.popMenu.addAction("Reconnect", self.reconnect)
         
@@ -136,7 +135,7 @@ class MyTabWidget(QtWidgets.QTabWidget):
 #        tabWidget = self.findChild(QX11EmbedContainer, tabObjectName)
         tabWidget = self.findChild(PageTab, tabObjectName)
         
-        for topLevel in QtWidgets.QApplication.topLevelWidgets():
+        for topLevel in QtGui.QApplication.topLevelWidgets():
             if type(topLevel) == PageTab and topLevel.objectName() == tabObjectName:
                     return topLevel
         
@@ -166,4 +165,3 @@ class MyTabWidget(QtWidgets.QTabWidget):
         self.tabClosed.emit(tabTitle)
         self.removeTab(tabIdx)
         tabWidget.deleteLater()
-

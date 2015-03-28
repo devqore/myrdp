@@ -2,51 +2,66 @@
 
 # Form implementation generated from reading ui file 'ui/hostconfig.ui'
 #
-# Created by: PyQt5 UI code generator 5.4.1
+# Created: Sat Mar 28 13:54:14 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_HostConfig(object):
     def setupUi(self, HostConfig):
-        HostConfig.setObjectName("HostConfig")
+        HostConfig.setObjectName(_fromUtf8("HostConfig"))
         HostConfig.resize(270, 198)
-        self.verticalLayout = QtWidgets.QVBoxLayout(HostConfig)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.name = QtWidgets.QLineEdit(HostConfig)
-        self.name.setText("")
-        self.name.setObjectName("name")
+        self.verticalLayout = QtGui.QVBoxLayout(HostConfig)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.name = QtGui.QLineEdit(HostConfig)
+        self.name.setText(_fromUtf8(""))
+        self.name.setObjectName(_fromUtf8("name"))
         self.verticalLayout.addWidget(self.name)
-        self.address = QtWidgets.QLineEdit(HostConfig)
-        self.address.setObjectName("address")
+        self.address = QtGui.QLineEdit(HostConfig)
+        self.address.setObjectName(_fromUtf8("address"))
         self.verticalLayout.addWidget(self.address)
-        self.user = QtWidgets.QLineEdit(HostConfig)
-        self.user.setObjectName("user")
+        self.user = QtGui.QLineEdit(HostConfig)
+        self.user.setObjectName(_fromUtf8("user"))
         self.verticalLayout.addWidget(self.user)
-        self.password = QtWidgets.QLineEdit(HostConfig)
-        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password.setObjectName("password")
+        self.password = QtGui.QLineEdit(HostConfig)
+        self.password.setEchoMode(QtGui.QLineEdit.Password)
+        self.password.setObjectName(_fromUtf8("password"))
         self.verticalLayout.addWidget(self.password)
-        self.errorArea = QtWidgets.QVBoxLayout()
-        self.errorArea.setObjectName("errorArea")
+        self.errorArea = QtGui.QVBoxLayout()
+        self.errorArea.setObjectName(_fromUtf8("errorArea"))
         self.verticalLayout.addLayout(self.errorArea)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
-        self.connectCheckBox = QtWidgets.QCheckBox(HostConfig)
+        self.connectCheckBox = QtGui.QCheckBox(HostConfig)
         self.connectCheckBox.setEnabled(False)
         self.connectCheckBox.setChecked(True)
-        self.connectCheckBox.setObjectName("connectCheckBox")
+        self.connectCheckBox.setObjectName(_fromUtf8("connectCheckBox"))
         self.horizontalLayout.addWidget(self.connectCheckBox)
-        self.saveCheckBox = QtWidgets.QCheckBox(HostConfig)
+        self.saveCheckBox = QtGui.QCheckBox(HostConfig)
         self.saveCheckBox.setEnabled(False)
         self.saveCheckBox.setChecked(True)
-        self.saveCheckBox.setObjectName("saveCheckBox")
+        self.saveCheckBox.setObjectName(_fromUtf8("saveCheckBox"))
         self.horizontalLayout.addWidget(self.saveCheckBox)
-        self.acceptButton = QtWidgets.QPushButton(HostConfig)
-        self.acceptButton.setObjectName("acceptButton")
+        self.acceptButton = QtGui.QPushButton(HostConfig)
+        self.acceptButton.setObjectName(_fromUtf8("acceptButton"))
         self.horizontalLayout.addWidget(self.acceptButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
 
@@ -54,13 +69,12 @@ class Ui_HostConfig(object):
         QtCore.QMetaObject.connectSlotsByName(HostConfig)
 
     def retranslateUi(self, HostConfig):
-        _translate = QtCore.QCoreApplication.translate
-        HostConfig.setWindowTitle(_translate("HostConfig", "Form"))
-        self.name.setPlaceholderText(_translate("HostConfig", "Name"))
-        self.address.setPlaceholderText(_translate("HostConfig", "Host"))
-        self.user.setPlaceholderText(_translate("HostConfig", "User"))
-        self.password.setPlaceholderText(_translate("HostConfig", "Password"))
-        self.connectCheckBox.setText(_translate("HostConfig", "connect"))
-        self.saveCheckBox.setText(_translate("HostConfig", "save"))
-        self.acceptButton.setText(_translate("HostConfig", "Accept"))
+        HostConfig.setWindowTitle(_translate("HostConfig", "Form", None))
+        self.name.setPlaceholderText(_translate("HostConfig", "Name", None))
+        self.address.setPlaceholderText(_translate("HostConfig", "Host", None))
+        self.user.setPlaceholderText(_translate("HostConfig", "User", None))
+        self.password.setPlaceholderText(_translate("HostConfig", "Password", None))
+        self.connectCheckBox.setText(_translate("HostConfig", "connect", None))
+        self.saveCheckBox.setText(_translate("HostConfig", "save", None))
+        self.acceptButton.setText(_translate("HostConfig", "Accept", None))
 

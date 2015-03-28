@@ -8,7 +8,7 @@ python main.py
 
 You need:
 - python 2.7
-	+ PyQt5
+	+ PyQt4
 	+ PyYAML
     + SQLAlchemy
 - xfreerdp (checked with 1.2.1)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QDialog, QLabel
+from PyQt4.QtGui import QDialog, QLabel
 from app.gui.hostconfig_ui import Ui_HostConfig
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import QProcess, QSettings
-from PyQt5.QtWidgets import QDialog, QMainWindow, QWidget, QMessageBox, QMenu
+from PyQt4.QtCore import QProcess, QSettings
+from PyQt4.QtGui import QDialog, QMainWindow, QWidget, QMessageBox, QMenu
 
 from app import logging
 from app.config import Config
@@ -141,8 +141,8 @@ class MainWindow(QMainWindow):
 
     def restoreSettings(self):
         settings = QSettings("MyRDP")
-        self.restoreGeometry(settings.value("geometry"))
-        self.restoreState(settings.value("windowState"))
+        self.restoreGeometry(settings.value("geometry").toByteArray())
+        self.restoreState(settings.value("windowState").toByteArray())
 
     def closeEvent(self, event):
         # todo: ask on close when has tabs should go as option, by default turned on
