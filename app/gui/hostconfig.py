@@ -28,7 +28,7 @@ class HostConfigDialog(QDialog):
     def collectFieldsValues(self):
         attributesDict = {}
         for attr in self.attributes:
-            attributesDict[attr] = self.getTextFieldValue(attr)
+            attributesDict[attr] = unicode(self.getTextFieldValue(attr))
         return attributesDict
 
     def acceptAddHost(self):
@@ -58,7 +58,7 @@ class HostConfigDialog(QDialog):
     def add(self):
         self.ui.acceptButton.clicked.connect(self.acceptAddHost)
         retCode = self.exec_()
-        self.ui.acceptButton.disconnect()
+        self.ui.acceptButton.clicked.disconnect()
 
         return retCode
 
@@ -75,6 +75,6 @@ class HostConfigDialog(QDialog):
 
         self.ui.acceptButton.clicked.connect(lambda: self.acceptEditHost(host))
         retCode = self.exec_()
-        self.ui.acceptButton.disconnect()
+        self.ui.acceptButton.clicked.disconnect()
 
         return retCode
