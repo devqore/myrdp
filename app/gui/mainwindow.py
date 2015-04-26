@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import QProcess, QSettings
+from PyQt4.QtCore import QProcess, QSettings, Qt
 from PyQt4.QtGui import QDialog, QMainWindow, QWidget, QMessageBox, QMenu
 
 from app import logging
@@ -49,6 +49,13 @@ class MainWindow(QMainWindow):
     def getCurrentHostListItemName(self):
         return self.ui.hostsList.currentItem().text()
 
+    def findHostItemByName(self, name):
+        result = self.ui.hostsList.findItems(name, Qt.MatchExactly)
+        resultLen = len(result)
+        if resultLen != 1:  # should be only one host
+            logging.error("Host not found. Got %d results" % resultLen)
+        return result[0]
+
     def slotShowHostContextMenu(self, pos):
         """ slot needed to show menu in proper position, or i'm doing something wrong
         """
@@ -57,13 +64,17 @@ class MainWindow(QMainWindow):
     def addHost(self):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.add()
-        if resp:
+        if resp["code"]:
             self.setHostList()
+        hostName = resp.get("name")
+        if hostName:
+            hostItem = self.findHostItemByName(hostName)
+            self.slotConnectHost(hostItem)
 
     def editHost(self):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.edit(self.getCurrentHostListItemName())
-        if resp:
+        if resp["code"]:
             self.setHostList()
 
     def deleteHost(self):

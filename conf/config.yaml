@@ -5,7 +5,7 @@ global:
 
 xfreerdp:
   executable: xfreerdp
-  args: "+clipboard /cert-ignore +drives /kbd:0x00000415 -themes +compression /gdi:sw +auto-reconnect"
+  args: "+clipboard /cert-ignore +drives /kbd:0x00000415 -themes +compression /gdi:sw +auto-reconnect -sec-nla"
 
 rdesktop:
   executable: rdesktop

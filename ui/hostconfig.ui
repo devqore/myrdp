@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Host config</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -69,23 +69,10 @@
      <item>
       <widget class="QCheckBox" name="connectCheckBox">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>connect</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="saveCheckBox">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>save</string>
        </property>
        <property name="checked">
         <bool>true</bool>

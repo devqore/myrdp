@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/hostconfig.ui'
 #
-# Created: Sat Mar 28 13:54:14 2015
+# Created: Sun Apr 26 09:08:32 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,15 +51,10 @@ class Ui_HostConfig(object):
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.connectCheckBox = QtGui.QCheckBox(HostConfig)
-        self.connectCheckBox.setEnabled(False)
+        self.connectCheckBox.setEnabled(True)
         self.connectCheckBox.setChecked(True)
         self.connectCheckBox.setObjectName(_fromUtf8("connectCheckBox"))
         self.horizontalLayout.addWidget(self.connectCheckBox)
-        self.saveCheckBox = QtGui.QCheckBox(HostConfig)
-        self.saveCheckBox.setEnabled(False)
-        self.saveCheckBox.setChecked(True)
-        self.saveCheckBox.setObjectName(_fromUtf8("saveCheckBox"))
-        self.horizontalLayout.addWidget(self.saveCheckBox)
         self.acceptButton = QtGui.QPushButton(HostConfig)
         self.acceptButton.setObjectName(_fromUtf8("acceptButton"))
         self.horizontalLayout.addWidget(self.acceptButton)
@@ -69,12 +64,11 @@ class Ui_HostConfig(object):
         QtCore.QMetaObject.connectSlotsByName(HostConfig)
 
     def retranslateUi(self, HostConfig):
-        HostConfig.setWindowTitle(_translate("HostConfig", "Form", None))
+        HostConfig.setWindowTitle(_translate("HostConfig", "Host config", None))
         self.name.setPlaceholderText(_translate("HostConfig", "Name", None))
         self.address.setPlaceholderText(_translate("HostConfig", "Host", None))
         self.user.setPlaceholderText(_translate("HostConfig", "User", None))
         self.password.setPlaceholderText(_translate("HostConfig", "Password", None))
         self.connectCheckBox.setText(_translate("HostConfig", "connect", None))
-        self.saveCheckBox.setText(_translate("HostConfig", "save", None))
         self.acceptButton.setText(_translate("HostConfig", "Accept", None))
 

@@ -56,11 +56,22 @@ class HostConfigDialog(QDialog):
         self.ui.errorArea.addWidget(self.errorLabel)
 
     def add(self):
+        """
+        :return: dictionary {
+            "code": return code,
+            "name": host name if host should be connected
+            }
+        """
+        response = dict()
         self.ui.acceptButton.clicked.connect(self.acceptAddHost)
         retCode = self.exec_()
+        response["code"] = retCode
         self.ui.acceptButton.clicked.disconnect()
 
-        return retCode
+        if retCode and self.ui.connectCheckBox.isChecked():
+            response["name"] = self.ui.name.text()
+
+        return response
 
     def edit(self, hostName):
         """
@@ -68,6 +79,7 @@ class HostConfigDialog(QDialog):
         :type hostName: app.hosts.Hosts
         :return:
         """
+        response = dict()
         host = self.hosts.get(hostName)
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
@@ -75,6 +87,7 @@ class HostConfigDialog(QDialog):
 
         self.ui.acceptButton.clicked.connect(lambda: self.acceptEditHost(host))
         retCode = self.exec_()
+        response["code"] = retCode
         self.ui.acceptButton.clicked.disconnect()
 
-        return retCode
+        return response
