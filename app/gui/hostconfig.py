@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtGui import QDialog, QLabel
+from PyQt4.QtGui import QDialog, QLabel, QLineEdit
 from app.gui.hostconfig_ui import Ui_HostConfig
 
 
@@ -8,11 +8,19 @@ class HostConfigDialog(QDialog):
         super(HostConfigDialog, self).__init__()
         self.ui = Ui_HostConfig()
         self.ui.setupUi(self)
+        self.ui.showPassword.clicked.connect(self.changePasswordVisibility)
+        self.ui.showPassword.setToolTip("Show password")  # don't why not generated from ui file
         self.hosts = hosts
         # label to use to show errors
         self.errorLabel = None
 
         self.attributes = ['name', 'address', 'user', 'password']
+
+    def changePasswordVisibility(self):
+        if self.ui.showPassword.isChecked():
+            self.ui.password.setEchoMode(QLineEdit.Normal)
+        else:
+            self.ui.password.setEchoMode(QLineEdit.Password)
 
     def getTextFieldValue(self, field):
         """ field value or None

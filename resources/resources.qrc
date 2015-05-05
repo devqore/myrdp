@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="ico">
     <file>myrdp.svg</file>
+    <file>eye.svg</file>
   </qresource>
 </RCC>
