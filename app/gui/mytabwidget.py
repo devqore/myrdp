@@ -78,7 +78,8 @@ class PageTab(QtGui.QWidget):
 class MyTabWidget(QtGui.QTabWidget):
     # to communicate with main window, and send signal with tabName
     tabClosed = pyqtSignal("QString")
-    
+    reconnectionNeeded = pyqtSignal("QString")
+
     def __init__(self):
         super(MyTabWidget, self).__init__()
         self.setTabsClosable(True)
@@ -105,33 +106,43 @@ class MyTabWidget(QtGui.QTabWidget):
 
         self.popMenu = QtGui.QMenu(self)
         self.popMenu.addAction("Detach tab", self.detach)
+        self.popMenu.addAction("Detach frameless", self.detachFrameless)
 #        self.popMenu.addAction("Reconnect", self.reconnect)
-        
+
     def showContextMenu(self, point):
         self.currentTabIdx = self.tab.tabAt(point)
         self.popMenu.exec_(self.tab.mapToGlobal(point))
-        
-    def detach(self):
+
+    def setDetached(self, frameless):
         w = self.widget(self.currentTabIdx)
-        w.setParent(None)       
+        w.setParent(None)
+
+        if frameless:
+            w.setWindowFlags(Qt.FramelessWindowHint)
+        w.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
         w.show()
+
         # temp hack to not delete object, because will delete after show
         # todo: do it better
         title = w.windowTitle()
         self.detached[title] = w
 
-#    def reconnect(self):
-#        w = self.widget(self.currentTabIdx)
-#        print w.text
-#        print "reconnect"       
-        
-    def getTabObjectName(self, item):
-        title = item.text()
-        return u"p_%s" % title
+        if frameless:
+            w.setGeometry(self.parent().frameGeometry())
+            self.reconnectionNeeded.emit(title)
+
+    def detach(self):
+        self.setDetached(False)
+
+    def detachFrameless(self):
+        self.setDetached(True)
+
+    def getTabObjectName(self, tabName):
+        return u"p_%s" % tabName
     
-    def createTab(self, item):
+    def createTab(self, tabName):
         # used for create unique object name (because title is unique)
-        tabObjectName = self.getTabObjectName(item)
+        tabObjectName = self.getTabObjectName(tabName)
 #        tabWidget = self.findChild(QX11EmbedContainer, tabObjectName)
         tabWidget = self.findChild(PageTab, tabObjectName)
         
@@ -141,11 +152,10 @@ class MyTabWidget(QtGui.QTabWidget):
         
         if tabWidget is None:
             # todo: maybe we should use scroll area? but why? if size doesn`t fit, just reconnect
-            tabTitle = item.text()
             newTab = PageTab(self)
             newTab.setObjectName(tabObjectName)
-            tabIdx = self.addTab(newTab, tabTitle)
-            newTab.setWindowTitle(tabTitle)
+            tabIdx = self.addTab(newTab, tabName)
+            newTab.setWindowTitle(tabName)
             self.setCurrentIndex(tabIdx)
             return newTab
         else:

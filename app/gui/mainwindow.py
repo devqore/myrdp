@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QProcess, QSettings, Qt
-from PyQt4.QtGui import QDialog, QMainWindow, QWidget, QMessageBox, QMenu
+from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu
 
 from app import logging
 from app.config import Config
@@ -39,12 +39,17 @@ class MainWindow(QMainWindow):
         self.tabWidget = MyTabWidget()
         self.setCentralWidget(self.tabWidget)
         self.tabWidget.tabClosed.connect(self.slotOnTabClosed)
+        self.tabWidget.reconnectionNeeded.connect(self.connectHost)
 
         self.setHostList()
 
         # to hold unique {hostId : proc}
         self.procs = {}
         self.restoreSettings()
+
+    def showFramelessWidget(self):
+        self.t.show()
+        self.t.setGeometry(self.frameGeometry())
 
     def getCurrentHostListItemName(self):
         return self.ui.hostsList.currentItem().text()
@@ -99,9 +104,12 @@ class MainWindow(QMainWindow):
         self.tabWidget.activateTab(item)
 
     def slotConnectHost(self, item):
-        self.tabPage = self.tabWidget.createTab(item)
-        
-        hostId = unicode(item.text())
+        self.connectHost(unicode(item.text()))
+
+    def connectHost(self, hostId):
+        hostId = unicode(hostId)  # sometimes hostId comes as QString
+        self.tabPage = self.tabWidget.createTab(hostId)
+
         if hostId in self.procs.keys():
             proc = self.procs[hostId]
             proc.kill()
