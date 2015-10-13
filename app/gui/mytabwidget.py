@@ -10,8 +10,53 @@ class X11Embed(QtGui.QX11EmbedContainer):
         self.setMinimumSize(200, 200)
 
 
+class ControlButton(QtGui.QPushButton):
+    offset = None
+
+    def __init__(self, pageTabParent):
+        super(ControlButton, self).__init__(pageTabParent)
+        self.w = 25
+        self.h = 25
+        # self.setStyleSheet("* {background: transparent;}")
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setGeometry(pageTabParent.width() - self.w, pageTabParent.height() - self.h, self.w, self.h)
+        self.show()
+
+    def mousePressEvent(self, event):
+        self.offset = event.pos()
+        super(ControlButton, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        position = self.mapToParent(event.pos() - self.offset)
+        geometry = self.geometry()
+
+        x = position.x()
+        y = position.y()
+
+        parentGeometry = self.parent().geometry()
+        maxX = parentGeometry.width() - geometry.width()
+        maxY = parentGeometry.height() - geometry.height()
+
+        # set max and minimum X,Y area
+        if x < 0:
+            x = 0
+        elif x > maxX:
+            x = maxX
+
+        if y < 0:
+            y = 0
+        elif y > maxY:
+            y = maxY
+
+        # todo: move snapped only to borders
+        self.move(x, y)
+
+
 class PageTab(QtGui.QWidget):
     widgetClosed = pyqtSignal("QString")
+    controlButton = None
+    showControlButtonWhenDetached = True
+    reconnectionNeeded = pyqtSignal("QString")
 
     def __init__(self, parent=None):
         super(PageTab, self).__init__(parent)
@@ -37,10 +82,18 @@ class PageTab(QtGui.QWidget):
         self.textEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     
         self.layout.addWidget(self.textEdit)
-        
+
         # to embed rdesktop, if we use QWidget, there is some problems with
         # shortcuts (for e.g. in xfwm4), with QX11EmbedContainer looks good 
         self.x11 = X11Embed(self)
+
+    def showControlButton(self):
+        if not self.controlButton and self.showControlButtonWhenDetached:
+            self.controlButton = ControlButton(self)
+            menu = QtGui.QMenu()
+            menu.addAction("Close", self.close)
+            menu.addAction("Reconnect", self.emitReconnect)
+            self.controlButton.setMenu(menu)
 
     def closeEvent(self, event):
         title = self.windowTitle()
@@ -74,11 +127,13 @@ class PageTab(QtGui.QWidget):
     def text(self):
         return self.windowTitle()
 
+    def emitReconnect(self):
+        self.reconnectionNeeded.emit(self.text())
+
 
 class MyTabWidget(QtGui.QTabWidget):
     # to communicate with main window, and send signal with tabName
     tabClosed = pyqtSignal("QString")
-    reconnectionNeeded = pyqtSignal("QString")
 
     def __init__(self):
         super(MyTabWidget, self).__init__()
@@ -113,29 +168,32 @@ class MyTabWidget(QtGui.QTabWidget):
         self.currentTabIdx = self.tab.tabAt(point)
         self.popMenu.exec_(self.tab.mapToGlobal(point))
 
-    def setDetached(self, frameless):
-        w = self.widget(self.currentTabIdx)
-        w.setParent(None)
+    def setDetached(self, frameless, widget=None):
+        if not widget:
+            widget = self.widget(self.currentTabIdx)
+        widget.setParent(None)
 
         if frameless:
-            w.setWindowFlags(Qt.FramelessWindowHint)
-        w.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
-        w.show()
+            widget.setWindowFlags(Qt.FramelessWindowHint)
+        widget.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
+        widget.show()
 
         # temp hack to not delete object, because will delete after show
         # todo: do it better
-        title = w.windowTitle()
-        self.detached[title] = w
+        title = widget.windowTitle()
+        self.detached[title] = widget
 
         if frameless:
-            w.setGeometry(self.parent().frameGeometry())
-            self.reconnectionNeeded.emit(title)
+            widget.setGeometry(self.parent().frameGeometry())
+            widget.reconnectionNeeded.emit(title)
 
-    def detach(self):
-        self.setDetached(False)
+        widget.showControlButton()
 
-    def detachFrameless(self):
-        self.setDetached(True)
+    def detach(self, widget=None):
+        self.setDetached(False, widget)
+
+    def detachFrameless(self, widget=None):
+        self.setDetached(True, widget)
 
     def getTabObjectName(self, tabName):
         return u"p_%s" % tabName

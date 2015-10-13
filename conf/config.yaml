@@ -9,4 +9,4 @@ xfreerdp:
 
 rdesktop:
   executable: rdesktop
-  args: ""
+  args: "-z -r disk:test=/home -x m"

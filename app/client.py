@@ -11,14 +11,20 @@ class Client(object):
         :return:
         """
         self.executable = executable
-        self.args = args.split(" ")
+        if args:
+            self.args = args.split(" ")
+        else:
+            self.args = None
         self.settings = {}  # dictionary to store client settings
 
     def setWindowParameters(self, windowId, width, height):
         raise NotImplementedError
 
-    def setUserAndPassword(self, user, password):
-        raise NotImplementedError
+    def setUserAndPassword(self, user=None, password=None):
+        if user:
+            self.settings['u'] = user
+        if password:
+            self.settings['p'] = password
 
     def setAddress(self, address):
         raise NotImplementedError
@@ -28,20 +34,32 @@ class Client(object):
 
 
 class RdesktopClient(Client):
+    host = None  # in rdesktop host is given without argument
+
     """ todo: at this time only freerdp implemented """
-    pass
+    def setWindowParameters(self, windowId, width, height):
+        self.settings.update({"X": str(int(windowId)), "g": "%sx%s" % (width, height)})
+
+    def setAddress(self, address):
+        self.host = address
+
+    def getComposedCommand(self):
+        argsList = []
+        for key, value in self.settings.items():
+            argsList.append("-%s" % key)
+            argsList.append(value)
+        if self.args:
+            argsList.extend(self.args)
+        argsList.append(self.host)
+        print argsList
+        logging.debug("Running command:\n%s %s" % (self.executable, " ".join(argsList)))
+        return self.executable, argsList
 
 
 class FreerdpClient(Client):
 
     def setWindowParameters(self, windowId, width, height):
         self.settings.update({"parent-window": int(windowId), "w": width, "h": height})
-
-    def setUserAndPassword(self, user=None, password=None):
-        if user:
-            self.settings['u'] = user
-        if password:
-            self.settings['p'] = password
 
     def setAddress(self, address):
         self.settings['v'] = address
@@ -63,6 +81,5 @@ def ClientFactory(clientType, *args, **kwargs):
         "rdesktop": RdesktopClient
     }
     return clientTypeToClass[clientType](*args, **kwargs)
-
 
 

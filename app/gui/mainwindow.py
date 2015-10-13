@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
         self.hostMenu = QMenu()
         self.hostMenu.addAction("Edit", self.editHost)
         self.hostMenu.addAction("Delete", self.deleteHost)
+        self.hostMenu.addAction("Connect frameless", self.connectFrameless)
 
         # setup main window
         self.ui = Ui_MainWindow()
@@ -39,7 +40,6 @@ class MainWindow(QMainWindow):
         self.tabWidget = MyTabWidget()
         self.setCentralWidget(self.tabWidget)
         self.tabWidget.tabClosed.connect(self.slotOnTabClosed)
-        self.tabWidget.reconnectionNeeded.connect(self.connectHost)
 
         self.setHostList()
 
@@ -86,6 +86,9 @@ class MainWindow(QMainWindow):
         self.hosts.delete(self.getCurrentHostListItemName())
         self.setHostList()
 
+    def connectFrameless(self):
+        self.connectHost(self.getCurrentHostListItemName(), frameless=True)
+
     # Fix to release keyboard from QX11EmbedContainer, when we leave widget through wm border
     def leaveEvent(self, event):
         keyG = QWidget.keyboardGrabber()
@@ -106,24 +109,28 @@ class MainWindow(QMainWindow):
     def slotConnectHost(self, item):
         self.connectHost(unicode(item.text()))
 
-    def connectHost(self, hostId):
+    def connectHost(self, hostId, frameless=False):
         hostId = unicode(hostId)  # sometimes hostId comes as QString
-        self.tabPage = self.tabWidget.createTab(hostId)
+        tabPage = self.tabWidget.createTab(hostId)
+        tabPage.reconnectionNeeded.connect(self.connectHost)
 
         if hostId in self.procs.keys():
             proc = self.procs[hostId]
             proc.kill()
 
-        execCmd, opts = self.getCmd(hostId)
-        self.startProcess(hostId, execCmd, opts)
+        if frameless:
+            self.tabWidget.detachFrameless(tabPage)
 
-    def getCmd(self, hostName):
+        execCmd, opts = self.getCmd(tabPage, hostId)
+        self.startProcess(tabPage, hostId, execCmd, opts)
+
+    def getCmd(self, tabPage, hostName):
         host = self.hosts.get(hostName)
 
         # set tabPage widget
-        width, height = self.tabPage.setSizeAndGetCurrent()
+        width, height = tabPage.setSizeAndGetCurrent()
         # 1et widget winId to embed rdesktop
-        winId = self.tabPage.x11.winId()
+        winId = tabPage.x11.winId()
 
         # set remote desktop client, at this time works only with freerdp
         remoteClientType, remoteClientOptions = self.config.getRdpClient()
@@ -133,7 +140,7 @@ class MainWindow(QMainWindow):
         remoteClient.setAddress(host.address)
         return remoteClient.getComposedCommand()
     
-    def startProcess(self, hostId, execCmd, opts):
+    def startProcess(self, tabPage, hostId, execCmd, opts):
         """
         :param hostId:
         :param execCmd:
@@ -142,12 +149,11 @@ class MainWindow(QMainWindow):
         """
         proc = QProcess()
         # todo: searching processes, with dictionary is monkey idea
-#        proc.setObjectName(u"proc_%s" % hostId)
-        proc.stateChanged.connect(self.tabPage.slotStateChanged)
-        proc.readyRead.connect(self.tabPage.slotRead)
+        proc.stateChanged.connect(tabPage.slotStateChanged)
+        proc.readyRead.connect(tabPage.slotRead)
 
         # when detached widget is closed
-        self.tabPage.widgetClosed.connect(self.slotOnTabClosed)
+        tabPage.widgetClosed.connect(self.slotOnTabClosed)
 
         proc.setProcessChannelMode(QProcess.MergedChannels)
         proc.start(execCmd, opts)
@@ -178,7 +184,7 @@ class MainWindow(QMainWindow):
             return
         
         self.saveSettings()
-        # bug: workaraound for bug when closing window and few tabs are opened with connected rdp
+        # bug: workaround for bug when closing window and few tabs are opened with connected rdp
         for i in self.procs.values():
             try:
                 i.kill()
