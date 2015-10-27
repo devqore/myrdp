@@ -166,8 +166,11 @@ class MainWindow(QMainWindow):
 
     def restoreSettings(self):
         settings = QSettings("MyRDP")
-        self.restoreGeometry(settings.value("geometry").toByteArray())
-        self.restoreState(settings.value("windowState").toByteArray())
+        try:
+            self.restoreGeometry(settings.value("geometry").toByteArray())
+            self.restoreState(settings.value("windowState").toByteArray())
+        except Exception:
+            logging.debug("No settings to restore")
 
     def closeEvent(self, event):
         # todo: ask on close when has tabs should go as option, by default turned on
@@ -192,7 +195,7 @@ class MainWindow(QMainWindow):
                 pass
         event.accept()
 
-    def slotOnWigetClosed(self, title):
+    def slotOnWidgetClosed(self, title):
         self.tabWidget.detached.pop(u"%s" % title)
         self.slotOnTabClosed(title)
 

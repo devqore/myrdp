@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtGui import QWidget, QApplication
 import sys
+import signal
 
 from app.gui.mainwindow import MainWindow
 from app.gui.mytabwidget import X11Embed
@@ -27,6 +28,9 @@ def focusChanged(lostFocus, hasFocus):
 if __name__ == "__main__":   
     args = argParser()
     app = QApplication(sys.argv)
+
+    # finish app with ctrl+c
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app.focusChanged.connect(focusChanged)
 

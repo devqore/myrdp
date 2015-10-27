@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import pyqtSignal, Qt, qDebug
-from PyQt4 import QtGui
+from PyQt4 import QtCore, QtGui
 
 
 class X11Embed(QtGui.QX11EmbedContainer):
@@ -10,34 +9,63 @@ class X11Embed(QtGui.QX11EmbedContainer):
         self.setMinimumSize(200, 200)
 
 
+class Position(object):
+    LEFT_TOP_CORNER = 0
+    LEFT_BOTTOM_CORNER = 1
+    RIGHT_TOP_CORNER = 2
+    RIGHT_BOTTOM_CORNER = 3
+    LEFT = 4
+    RIGHT = 5
+    TOP = 6
+    BOTTOM = 7
+
+    angle = {
+        LEFT_TOP_CORNER: 180,
+        RIGHT_TOP_CORNER: 180,
+        TOP: 180,
+        LEFT_BOTTOM_CORNER: 0,
+        RIGHT_BOTTOM_CORNER: 0,
+        BOTTOM: 0,
+        LEFT: 90,
+        RIGHT: 270,
+    }
+
+
 class ControlButton(QtGui.QPushButton):
     offset = None
+    w = 20
+    h = 20
 
     def __init__(self, pageTabParent):
         super(ControlButton, self).__init__(pageTabParent)
-        self.w = 25
-        self.h = 25
-        # self.setStyleSheet("* {background: transparent;}")
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setGeometry(pageTabParent.width() - self.w, pageTabParent.height() - self.h, self.w, self.h)
+
+        # set initial position on right side 80 px from top
+        self.setGeometry(pageTabParent.width() - self.w, 80, self.w, self.h)
+        self.currentPosition = Position.RIGHT
         self.show()
+
+        self.ico = QtGui.QIcon(":/ico/tab_menu.png")
+        self.setIcon(self.ico)
+        self.setIconSize(QtCore.QSize(self.w, self.h))
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+
+        pageTabParent.resized.connect(self.fixPosition)
 
     def mousePressEvent(self, event):
         self.offset = event.pos()
         super(ControlButton, self).mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        position = self.mapToParent(event.pos() - self.offset)
+    def getMax(self):
+        """ Max coordinates for x and y """
         geometry = self.geometry()
-
-        x = position.x()
-        y = position.y()
-
         parentGeometry = self.parent().geometry()
         maxX = parentGeometry.width() - geometry.width()
         maxY = parentGeometry.height() - geometry.height()
+        return maxX, maxY
 
-        # set max and minimum X,Y area
+    @staticmethod
+    def getNormalizedXY(x, y, maxX, maxY):
+        """ Returns fixed position for given parameters. Eliminates to small and to large coordinates. """
         if x < 0:
             x = 0
         elif x > maxX:
@@ -48,15 +76,97 @@ class ControlButton(QtGui.QPushButton):
         elif y > maxY:
             y = maxY
 
-        # todo: move snapped only to borders
+        return x, y
+
+    def mouseMoveEvent(self, event):
+        """ overrides mouse move event to properly sets icon """
+        position = self.mapToParent(event.pos() - self.offset)
+
+        x = position.x()
+        y = position.y()
+
+        # set max and minimum X,Y area
+        maxX, maxY = self.getMax()
+        x, y = self.getNormalizedXY(x, y, maxX, maxY)
+
+        if y != 0 and y != maxY:
+            if x != 0 and x != maxX:
+                return
+
+        self.assignCurrentPosition(x, y, maxX, maxY)
         self.move(x, y)
+
+    def assignCurrentPosition(self, x, y, maxX, maxY):
+        """ assign current button position for given coordinates """
+        # corners
+        if x == 0 and y == 0:
+            position = Position.LEFT_TOP_CORNER
+        elif x == 0 and y == maxY:
+            position = Position.LEFT_BOTTOM_CORNER
+        elif x == maxX and y == 0:
+            position = Position.RIGHT_TOP_CORNER
+        elif x == maxX and y == maxY:
+            position = Position.RIGHT_BOTTOM_CORNER
+        # others positions
+        elif x == 0 and y > 0:
+            position = Position.LEFT
+        elif x == maxX and y > 0:
+            position = Position.RIGHT
+        elif x > 0 and y == 0:
+            position = Position.TOP
+        elif x > 0 and y == maxY:
+            position = Position.BOTTOM
+
+        if self.currentPosition != position:
+            self.currentPosition = position
+
+    def fixPosition(self):
+        """ Used to fix position when tab is resized """
+        maxX, maxY = self.getMax()
+        geometry = self.geometry()
+
+        x, y = geometry.x(), geometry.y()
+        if (0 > x > maxX) or (0 > y > maxY):
+            return
+
+        x, y = self.getNormalizedXY(x, y, maxX, maxY)
+
+        if self.currentPosition in (Position.LEFT_TOP_CORNER,  Position.TOP, Position.RIGHT_TOP_CORNER):
+            y = 0
+        elif self.currentPosition in (Position.LEFT_BOTTOM_CORNER,  Position.BOTTOM, Position.RIGHT_BOTTOM_CORNER):
+            y = maxY
+        elif self.currentPosition == Position.RIGHT:
+            x = maxX
+        elif self.currentPosition == Position.LEFT:
+            x = 0
+
+        self.setGeometry(x, y, geometry.width(), geometry.height())
+
+    def paintEvent(self, event):
+        """ To rotate icon we must override paintEvent """
+        painter = QtGui.QStylePainter(self)
+
+        angle = Position.angle[self.currentPosition]
+        if angle:
+            painter.translate(self.width()/2, self.height()/2)
+            painter.rotate(angle)
+            painter.translate(-self.width()/2, -self.height()/2)
+
+        options = QtGui.QStyleOptionButton()
+        options.initFrom(self)
+        options.icon = self.icon()
+        options.iconSize = self.iconSize()
+        options.features = QtGui.QStyleOptionButton.Flat
+        painter.drawControl(QtGui.QStyle.CE_PushButton, options)
 
 
 class PageTab(QtGui.QWidget):
-    widgetClosed = pyqtSignal("QString")
+    widgetClosed = QtCore.pyqtSignal("QString")
+    resized = QtCore.pyqtSignal()
+    reconnectionNeeded = QtCore.pyqtSignal("QString")
+
     controlButton = None
     showControlButtonWhenDetached = True
-    reconnectionNeeded = pyqtSignal("QString")
 
     def __init__(self, parent=None):
         super(PageTab, self).__init__(parent)
@@ -67,9 +177,9 @@ class PageTab(QtGui.QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         # bellow each rdesktop instance is text area with stdout/stderr debug
-        # if somenthing goes wrong text is visible, but when rdesktop is runnig
+        # if something goes wrong text is visible, but when rdesktop is running
         # current display area is covered by rdp.
-        # If window is resized, thereis a lot of text, and rdp size is smaller,
+        # If window is resized, there is a lot of text, and rdp size is smaller,
         # than display area, you can see the text ;) looks buggy but at this (any:P) time
         # i think that's not important :)
 
@@ -78,8 +188,8 @@ class PageTab(QtGui.QWidget):
         self.textEdit.setFrameShape(QtGui.QFrame.NoFrame)
         self.textEdit.setStyleSheet("background-color:transparent;")
         
-        self.textEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.textEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.textEdit.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.textEdit.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
     
         self.layout.addWidget(self.textEdit)
 
@@ -101,6 +211,12 @@ class PageTab(QtGui.QWidget):
         event.accept()
         self.deleteLater()
 
+    def resizeEvent(self, event):
+        super(PageTab, self).resizeEvent(event)
+        # emit signal only when tab is visible
+        if self.isVisible():
+            self.resized.emit()
+
     def setSizeAndGetCurrent(self):
         """ Sets size of QX11EmbedContainer, because QX11 is not in layout, but
             textEdit is. Returns size of textEdit area which will be used in remote client
@@ -111,16 +227,12 @@ class PageTab(QtGui.QWidget):
     def slotRead(self):
         proc = self.sender() 
         txt = proc.readAllStandardOutput()
-        qDebug(txt) 
+        QtCore.qDebug(txt)
         self.textEdit.append(txt.data().rstrip('\n'))
-#        self.autoScroll()
 
     def slotStateChanged(self, state):
-        # QProcess::NotRunning - 0
-        # QProcess::Starting - 1
-        # QProcess::Running - 2
         # append text to the text area only when process has been stopped
-        if state == 0 and self.lastState == 2:
+        if state == QtCore.QProcess.NotRunning and self.lastState == QtCore.QProcess.Running:
             self.textEdit.append("<i>Process has been stopped..</i><br />")
         self.lastState = state
         
@@ -133,19 +245,12 @@ class PageTab(QtGui.QWidget):
 
 class MyTabWidget(QtGui.QTabWidget):
     # to communicate with main window, and send signal with tabName
-    tabClosed = pyqtSignal("QString")
+    tabClosed = QtCore.pyqtSignal("QString")
 
     def __init__(self):
         super(MyTabWidget, self).__init__()
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.slotCloseTab)
-        self.setStyleSheet("""QTabBar::tab:selected, QTabBar::tab:hover { 
-                              background: 
-                                qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                    stop: 0 # fafafa, 
-                                    stop: 0.4 # f4f4f4,
-                                    stop: 0.5 # e7e7e7,
-                                    stop: 1.0 # fafafa); }""")
         self.setMovable(True)
         self.setTab()
         # used when chosing action from menu 
@@ -156,7 +261,7 @@ class MyTabWidget(QtGui.QTabWidget):
        
     def setTab(self):
         self.tab = self.tabBar()
-        self.tab.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tab.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tab.customContextMenuRequested.connect(self.showContextMenu)
 
         self.popMenu = QtGui.QMenu(self)
@@ -174,7 +279,7 @@ class MyTabWidget(QtGui.QTabWidget):
         widget.setParent(None)
 
         if frameless:
-            widget.setWindowFlags(Qt.FramelessWindowHint)
+            widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         widget.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
         widget.show()
 
@@ -201,7 +306,6 @@ class MyTabWidget(QtGui.QTabWidget):
     def createTab(self, tabName):
         # used for create unique object name (because title is unique)
         tabObjectName = self.getTabObjectName(tabName)
-#        tabWidget = self.findChild(QX11EmbedContainer, tabObjectName)
         tabWidget = self.findChild(PageTab, tabObjectName)
         
         for topLevel in QtGui.QApplication.topLevelWidgets():

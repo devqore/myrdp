@@ -2,5 +2,6 @@
   <qresource prefix="ico">
     <file>myrdp.svg</file>
     <file>eye.svg</file>
+    <file>tab_menu.png</file>
   </qresource>
 </RCC>
