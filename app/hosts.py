@@ -20,6 +20,14 @@ class Hosts(object):
         hostsList = sum(self._db.session.query(HostTable.name), ())
         return sorted(hostsList)
 
+    def getFilteredHostsNames(self, queryFilter=None):
+        def q(): return self._db.session.query(HostTable.name)
+        if queryFilter:
+            hostsList = q().filter(HostTable.name.like("%%%s%%" % queryFilter))
+        else:
+            hostsList = q()
+        return sorted(sum(hostsList, ()))
+
     def updateHostValues(self, host, values):
         """
         :param host: host object

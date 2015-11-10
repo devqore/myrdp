@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/hostconfig.ui'
 #
-# Created: Tue May  5 19:16:55 2015
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -74,6 +73,9 @@ class Ui_HostConfig(object):
         self.connectCheckBox.setObjectName(_fromUtf8("connectCheckBox"))
         self.horizontalLayout.addWidget(self.connectCheckBox)
         self.acceptButton = QtGui.QPushButton(HostConfig)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/ico/ok.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.acceptButton.setIcon(icon1)
         self.acceptButton.setObjectName(_fromUtf8("acceptButton"))
         self.horizontalLayout.addWidget(self.acceptButton)
         self.verticalLayout.addLayout(self.horizontalLayout)

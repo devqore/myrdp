@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 
+from app.gui import actions
+
 
 class X11Embed(QtGui.QX11EmbedContainer):
     def __init__(self, parent=None):
@@ -201,8 +203,8 @@ class PageTab(QtGui.QWidget):
         if not self.controlButton and self.showControlButtonWhenDetached:
             self.controlButton = ControlButton(self)
             menu = QtGui.QMenu()
-            menu.addAction("Close", self.close)
-            menu.addAction("Reconnect", self.emitReconnect)
+            menu.addAction(QtGui.QIcon(":/ico/cancel.svg"), "Close", self.close)
+            menu.addAction(QtGui.QIcon(":/ico/refresh.svg"), "Reconnect", self.emitReconnect)
             self.controlButton.setMenu(menu)
 
     def closeEvent(self, event):
@@ -265,21 +267,29 @@ class MyTabWidget(QtGui.QTabWidget):
         self.tab.customContextMenuRequested.connect(self.showContextMenu)
 
         self.popMenu = QtGui.QMenu(self)
-        self.popMenu.addAction("Detach tab", self.detach)
-        self.popMenu.addAction("Detach frameless", self.detachFrameless)
-#        self.popMenu.addAction("Reconnect", self.reconnect)
+        self.popMenu.addAction(QtGui.QIcon(":/ico/refresh.svg"), "Reconnect", self.reconnect)
+        self.popMenu.addAction(QtGui.QIcon(":/ico/detach.svg"), "Detach tab", self.detach)
+        actions.addActionWithScreenChose(self.popMenu, self.detachFrameless,
+                                         ':/ico/frameless.svg', "Connect frameless")
 
     def showContextMenu(self, point):
         self.currentTabIdx = self.tab.tabAt(point)
         self.popMenu.exec_(self.tab.mapToGlobal(point))
 
-    def setDetached(self, frameless, widget=None):
+    def reconnect(self):
+        self.currentTab.emitReconnect()
+
+    def setDetached(self, frameless, widget=None, screenIndex=None):
         if not widget:
-            widget = self.widget(self.currentTabIdx)
+            widget = self.currentTab
         widget.setParent(None)
 
         if frameless:
             widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+            desktop = QtGui.QApplication.desktop()
+            if screenIndex is None:
+                screenIndex = desktop.screenNumber(self)
+            widget.setGeometry(desktop.availableGeometry(screenIndex))
         widget.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
         widget.show()
 
@@ -289,20 +299,23 @@ class MyTabWidget(QtGui.QTabWidget):
         self.detached[title] = widget
 
         if frameless:
-            widget.setGeometry(self.parent().frameGeometry())
             widget.reconnectionNeeded.emit(title)
 
         widget.showControlButton()
 
+    @property
+    def currentTab(self):
+        return self.widget(self.currentTabIdx)
+
     def detach(self, widget=None):
         self.setDetached(False, widget)
 
-    def detachFrameless(self, widget=None):
-        self.setDetached(True, widget)
+    def detachFrameless(self, widget=None, screenIndex=None):
+        self.setDetached(True, widget, screenIndex)
 
     def getTabObjectName(self, tabName):
         return u"p_%s" % tabName
-    
+
     def createTab(self, tabName):
         # used for create unique object name (because title is unique)
         tabObjectName = self.getTabObjectName(tabName)

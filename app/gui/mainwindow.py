@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QProcess, QSettings, Qt
-from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu
+from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon
 
 from app import logging
 from app.config import Config
 from app.client import ClientFactory
 from app.database import Database
 from app.hosts import Hosts
+from app.gui import actions
 from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
@@ -22,14 +23,21 @@ class MainWindow(QMainWindow):
 
         # menu used for each host
         self.hostMenu = QMenu()
-        self.hostMenu.addAction("Edit", self.editHost)
-        self.hostMenu.addAction("Delete", self.deleteHost)
-        self.hostMenu.addAction("Connect frameless", self.connectFrameless)
+        self.hostMenu.addAction(QIcon(':/ico/edit.svg'), "Edit", self.editHost)
+        self.hostMenu.addAction(QIcon(':/ico/remove.svg'), "Delete", self.deleteHost)
+        actions.addActionWithScreenChose(self.hostMenu, self.connectFrameless,
+                                         ':/ico/frameless.svg', "Connect frameless")
 
         # setup main window
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.addHost.clicked.connect(self.addHost)
+
+        # set global menu
+        self.globalMenu = QMenu()
+        self.globalMenu.addAction(QIcon(':/ico/add.svg'), 'Add host', self.addHost)
+        # disable menu indicator
+        self.ui.menu.setStyleSheet("QPushButton::menu-indicator {image: none;}")
+        self.ui.menu.setMenu(self.globalMenu)
 
         # set events on hosts list
         self.ui.hostsList.itemDoubleClicked.connect(self.slotConnectHost)
@@ -41,6 +49,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabWidget)
         self.tabWidget.tabClosed.connect(self.slotOnTabClosed)
 
+        self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
 
         # to hold unique {hostId : proc}
@@ -86,8 +95,8 @@ class MainWindow(QMainWindow):
         self.hosts.delete(self.getCurrentHostListItemName())
         self.setHostList()
 
-    def connectFrameless(self):
-        self.connectHost(self.getCurrentHostListItemName(), frameless=True)
+    def connectFrameless(self, screenIndex=None):
+        self.connectHost(self.getCurrentHostListItemName(), frameless=True, screenIndex=screenIndex)
 
     # Fix to release keyboard from QX11EmbedContainer, when we leave widget through wm border
     def leaveEvent(self, event):
@@ -98,9 +107,8 @@ class MainWindow(QMainWindow):
 
     def setHostList(self):
         """ set hosts list in list view """
-        logging.debug("Setting hosts list")
         self.ui.hostsList.clear()
-        self.ui.hostsList.addItems(self.hosts.getAllHostsNames())
+        self.ui.hostsList.addItems(self.hosts.getFilteredHostsNames(self.ui.filter.text()))
     
     def slotShowHost(self, item):
         # on one click we activating tab and showing options
@@ -109,7 +117,7 @@ class MainWindow(QMainWindow):
     def slotConnectHost(self, item):
         self.connectHost(unicode(item.text()))
 
-    def connectHost(self, hostId, frameless=False):
+    def connectHost(self, hostId, frameless=False, screenIndex=None):
         hostId = unicode(hostId)  # sometimes hostId comes as QString
         tabPage = self.tabWidget.createTab(hostId)
         tabPage.reconnectionNeeded.connect(self.connectHost)
@@ -119,7 +127,7 @@ class MainWindow(QMainWindow):
             proc.kill()
 
         if frameless:
-            self.tabWidget.detachFrameless(tabPage)
+            self.tabWidget.detachFrameless(tabPage, screenIndex)
 
         execCmd, opts = self.getCmd(tabPage, hostId)
         self.startProcess(tabPage, hostId, execCmd, opts)

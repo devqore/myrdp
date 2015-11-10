@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/mainwindow.ui'
 #
-# Created: Sat Mar 28 13:54:13 2015
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,18 +36,46 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         MainWindow.setCentralWidget(self.centralWidget)
         self.hostsDock = QtGui.QDockWidget(MainWindow)
-        self.hostsDock.setAutoFillBackground(True)
+        self.hostsDock.setAutoFillBackground(False)
         self.hostsDock.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
         self.hostsDock.setObjectName(_fromUtf8("hostsDock"))
         self.hostsWidget = QtGui.QWidget()
         self.hostsWidget.setObjectName(_fromUtf8("hostsWidget"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.hostsWidget)
-        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setMargin(0)
+        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
-        self.addHost = QtGui.QPushButton(self.hostsWidget)
-        self.addHost.setObjectName(_fromUtf8("addHost"))
-        self.verticalLayout_3.addWidget(self.addHost)
+        self.buttonsLayout = QtGui.QHBoxLayout()
+        self.buttonsLayout.setObjectName(_fromUtf8("buttonsLayout"))
+        self.menu = QtGui.QPushButton(self.hostsWidget)
+        self.menu.setMinimumSize(QtCore.QSize(25, 25))
+        self.menu.setMaximumSize(QtCore.QSize(25, 25))
+        self.menu.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.menu.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.menu.setAutoFillBackground(True)
+        self.menu.setText(_fromUtf8(""))
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/ico/menu.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.menu.setIcon(icon1)
+        self.menu.setIconSize(QtCore.QSize(25, 25))
+        self.menu.setFlat(True)
+        self.menu.setObjectName(_fromUtf8("menu"))
+        self.buttonsLayout.addWidget(self.menu)
+        self.filter = QtGui.QLineEdit(self.hostsWidget)
+        self.filter.setObjectName(_fromUtf8("filter"))
+        self.buttonsLayout.addWidget(self.filter)
+        self.clear = QtGui.QPushButton(self.hostsWidget)
+        self.clear.setMinimumSize(QtCore.QSize(24, 24))
+        self.clear.setMaximumSize(QtCore.QSize(24, 24))
+        self.clear.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.clear.setText(_fromUtf8(""))
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/ico/clear.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.clear.setIcon(icon2)
+        self.clear.setFlat(True)
+        self.clear.setObjectName(_fromUtf8("clear"))
+        self.buttonsLayout.addWidget(self.clear)
+        self.verticalLayout_3.addLayout(self.buttonsLayout)
         self.hostsList = QtGui.QListWidget(self.hostsWidget)
         self.hostsList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.hostsList.setAutoFillBackground(True)
@@ -60,12 +87,14 @@ class Ui_MainWindow(object):
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.hostsDock)
 
         self.retranslateUi(MainWindow)
+        QtCore.QObject.connect(self.clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.filter.clear)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MyRDP", None))
-        self.hostsDock.setWindowTitle(_translate("MainWindow", "Hosts &lists", None))
-        self.addHost.setText(_translate("MainWindow", "Add host", None))
+        self.hostsDock.setWindowTitle(_translate("MainWindow", "Hosts", None))
+        self.menu.setToolTip(_translate("MainWindow", "Menu", None))
+        self.filter.setPlaceholderText(_translate("MainWindow", "Filter", None))
         self.hostsList.setSortingEnabled(True)
 
 import resources_rc

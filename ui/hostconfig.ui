@@ -129,6 +129,10 @@
        <property name="text">
         <string>Accept</string>
        </property>
+       <property name="icon">
+        <iconset resource="../resources/resources.qrc">
+         <normaloff>:/ico/ok.svg</normaloff>:/ico/ok.svg</iconset>
+       </property>
       </widget>
      </item>
     </layout>

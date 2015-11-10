@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QWidget, QApplication
 import sys
 import signal
@@ -19,7 +20,7 @@ def argParser():
 def focusChanged(lostFocus, hasFocus):
     hasFocusType = type(hasFocus)
     if hasFocus is None or hasFocusType != X11Embed: # for e.g. focus is out from application, or is another widget
-        keyG = QWidget.keyboardGrabber()  # find keyboardGraber and releaseKeyboard
+        keyG = QWidget.keyboardGrabber()  # find keyboardGrabber and releaseKeyboard
         if keyG is not None:
             keyG.releaseKeyboard()
     elif hasFocusType == X11Embed:
@@ -28,6 +29,8 @@ def focusChanged(lostFocus, hasFocus):
 if __name__ == "__main__":   
     args = argParser()
     app = QApplication(sys.argv)
+    # show icons in menus
+    app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
 
     # finish app with ctrl+c
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -36,4 +39,7 @@ if __name__ == "__main__":
 
     mw = MainWindow(args.config)
     mw.show()
-    sys.exit(app.exec_())
+
+    app.exec_()
+    app.deleteLater()
+    sys.exit(0)
