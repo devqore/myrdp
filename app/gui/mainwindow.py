@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QProcess, QSettings, Qt
-from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon
+from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout
 
 from app import logging
 from app.config import Config
@@ -11,6 +11,16 @@ from app.gui import actions
 from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
+
+
+class DockWidgetTitleBar(QWidget):
+    """
+    Add this time widget with just some spacing from layout
+    """
+    def __init__(self):
+        super(DockWidgetTitleBar, self).__init__()
+        lay = QVBoxLayout()
+        self.setLayout(lay)
 
 
 class MainWindow(QMainWindow):
@@ -32,11 +42,22 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # when top level changed, we changing dock title bar
+        self.dockWidgetTileBar = DockWidgetTitleBar()
+        self.ui.hostsDock.setTitleBarWidget(self.dockWidgetTileBar)
+        self.ui.hostsDock.topLevelChanged.connect(self.dockLevelChanged)
+
         # set global menu
         self.globalMenu = QMenu()
         self.globalMenu.addAction(QIcon(':/ico/add.svg'), 'Add host', self.addHost)
         # disable menu indicator
         self.ui.menu.setStyleSheet("QPushButton::menu-indicator {image: none;}")
+        self.positionMenu = QMenu("Dock position")
+        self.positionMenu.addAction("Left", lambda: self.setDockPosition(Qt.LeftDockWidgetArea))
+        self.positionMenu.addAction("Right", lambda: self.setDockPosition(Qt.RightDockWidgetArea))
+        self.positionMenu.addAction("Float", self.setDockFloat)
+        self.globalMenu.addMenu(self.positionMenu)
+        self.globalMenu.addAction('Quit', self.close)
         self.ui.menu.setMenu(self.globalMenu)
 
         # set events on hosts list
@@ -55,6 +76,26 @@ class MainWindow(QMainWindow):
         # to hold unique {hostId : proc}
         self.procs = {}
         self.restoreSettings()
+
+    def setDockPosition(self, dockWidgetArea):
+        if self.ui.hostsDock.isFloating():
+            self.ui.hostsDock.setFloating(False)
+        self.addDockWidget(dockWidgetArea, self.ui.hostsDock)
+
+    def setDockFloat(self):
+        if self.ui.hostsDock.isFloating():
+            return
+        # default title bar must be set before is float because sometimes window make strange crash
+        self.ui.hostsDock.setTitleBarWidget(None)
+        self.ui.hostsDock.setFloating(True)
+
+    def dockLevelChanged(self, isFloating):
+        if isFloating:
+            # changing title bar widget if is not none, probably true will be only once on start with saved float state
+            if self.ui.hostsDock.titleBarWidget():
+                self.ui.hostsDock.setTitleBarWidget(None)
+        else:
+            self.ui.hostsDock.setTitleBarWidget(self.dockWidgetTileBar)
 
     def showFramelessWidget(self):
         self.t.show()
