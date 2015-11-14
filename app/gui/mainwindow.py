@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import QProcess, QSettings, Qt
+from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout
 
 from app import logging
@@ -11,6 +11,7 @@ from app.gui import actions
 from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
+from app.gui.process import ProcessManager
 
 
 class DockWidgetTitleBar(QWidget):
@@ -68,13 +69,9 @@ class MainWindow(QMainWindow):
         # set tab widget
         self.tabWidget = MyTabWidget()
         self.setCentralWidget(self.tabWidget)
-        self.tabWidget.tabClosed.connect(self.slotOnTabClosed)
 
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
-
-        # to hold unique {hostId : proc}
-        self.procs = {}
         self.restoreSettings()
 
     def setDockPosition(self, dockWidgetArea):
@@ -163,15 +160,11 @@ class MainWindow(QMainWindow):
         tabPage = self.tabWidget.createTab(hostId)
         tabPage.reconnectionNeeded.connect(self.connectHost)
 
-        if hostId in self.procs.keys():
-            proc = self.procs[hostId]
-            proc.kill()
-
         if frameless:
             self.tabWidget.detachFrameless(tabPage, screenIndex)
 
         execCmd, opts = self.getCmd(tabPage, hostId)
-        self.startProcess(tabPage, hostId, execCmd, opts)
+        ProcessManager.start(hostId, tabPage, execCmd, opts)
 
     def getCmd(self, tabPage, hostName):
         host = self.hosts.get(hostName)
@@ -188,25 +181,6 @@ class MainWindow(QMainWindow):
         remoteClient.setUserAndPassword(host.user, host.password)
         remoteClient.setAddress(host.address)
         return remoteClient.getComposedCommand()
-    
-    def startProcess(self, tabPage, hostId, execCmd, opts):
-        """
-        :param hostId:
-        :param execCmd:
-        :param opts: opts as list
-        :return:
-        """
-        proc = QProcess()
-        # todo: searching processes, with dictionary is monkey idea
-        proc.stateChanged.connect(tabPage.slotStateChanged)
-        proc.readyRead.connect(tabPage.slotRead)
-
-        # when detached widget is closed
-        tabPage.widgetClosed.connect(self.slotOnTabClosed)
-
-        proc.setProcessChannelMode(QProcess.MergedChannels)
-        proc.start(execCmd, opts)
-        self.procs[hostId] = proc
 
     def saveSettings(self):
         settings = QSettings("MyRDP")
@@ -222,8 +196,7 @@ class MainWindow(QMainWindow):
             logging.debug("No settings to restore")
 
     def closeEvent(self, event):
-        # todo: ask on close when has tabs should go as option, by default turned on
-        if self.tabWidget.count() == 0:
+        if not ProcessManager.hasActiveProcess:
             self.saveSettings()
             return
                
@@ -236,23 +209,5 @@ class MainWindow(QMainWindow):
             return
         
         self.saveSettings()
-        # bug: workaround for bug when closing window and few tabs are opened with connected rdp
-        for i in self.procs.values():
-            try:
-                i.kill()
-            except:
-                pass
+        ProcessManager.killemall()
         event.accept()
-
-    def slotOnWidgetClosed(self, title):
-        self.tabWidget.detached.pop(u"%s" % title)
-        self.slotOnTabClosed(title)
-
-    def slotOnTabClosed(self, title):
-        try:
-            proc = self.procs.pop(u"%s" % title)
-            proc.kill()
-        except:
-            # bug: after detaching tab make reconnect, after that close the tab.
-            # Make just pass until Process class is not refactored
-            pass

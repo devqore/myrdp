@@ -163,7 +163,7 @@ class ControlButton(QtGui.QPushButton):
 
 
 class PageTab(QtGui.QWidget):
-    widgetClosed = QtCore.pyqtSignal("QString")
+    widgetClosed = QtCore.pyqtSignal()
     resized = QtCore.pyqtSignal()
     reconnectionNeeded = QtCore.pyqtSignal("QString")
 
@@ -208,8 +208,7 @@ class PageTab(QtGui.QWidget):
             self.controlButton.setMenu(menu)
 
     def closeEvent(self, event):
-        title = self.windowTitle()
-        self.widgetClosed.emit(title)
+        self.widgetClosed.emit()
         event.accept()
         self.deleteLater()
 
@@ -246,8 +245,6 @@ class PageTab(QtGui.QWidget):
 
 
 class MyTabWidget(QtGui.QTabWidget):
-    # to communicate with main window, and send signal with tabName
-    tabClosed = QtCore.pyqtSignal("QString")
 
     def __init__(self):
         super(MyTabWidget, self).__init__()
@@ -255,12 +252,9 @@ class MyTabWidget(QtGui.QTabWidget):
         self.tabCloseRequested.connect(self.slotCloseTab)
         self.setMovable(True)
         self.setTab()
-        # used when chosing action from menu 
+        # used when choosing action from menu
         self.currentTabIdx = None
-        
-        # list with detached windows
-        self.detached = {}
-       
+
     def setTab(self):
         self.tab = self.tabBar()
         self.tab.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -293,13 +287,8 @@ class MyTabWidget(QtGui.QTabWidget):
         widget.setWindowIcon(QtGui.QIcon(":/ico/myrdp.svg"))
         widget.show()
 
-        # temp hack to not delete object, because will delete after show
-        # todo: do it better
-        title = widget.windowTitle()
-        self.detached[title] = widget
-
         if frameless:
-            widget.reconnectionNeeded.emit(title)
+            widget.reconnectionNeeded.emit(widget.windowTitle())
 
         widget.showControlButton()
 
@@ -326,7 +315,6 @@ class MyTabWidget(QtGui.QTabWidget):
                     return topLevel
         
         if tabWidget is None:
-            # todo: maybe we should use scroll area? but why? if size doesn`t fit, just reconnect
             newTab = PageTab(self)
             newTab.setObjectName(tabObjectName)
             tabIdx = self.addTab(newTab, tabName)
@@ -345,8 +333,6 @@ class MyTabWidget(QtGui.QTabWidget):
             self.setCurrentIndex(tabIdx)
     
     def slotCloseTab(self, tabIdx):
-        tabTitle = self.tabText(tabIdx)
         tabWidget = self.widget(tabIdx)
-        self.tabClosed.emit(tabTitle)
         self.removeTab(tabIdx)
         tabWidget.deleteLater()
