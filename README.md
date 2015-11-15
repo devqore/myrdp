@@ -1,6 +1,6 @@
 MyRDP - Remote desktop manager  
 
-[![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/9P1V1GZMsEI)
+[![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/2FoynZj-QFM)
 
 To start MyRDP run:
 
