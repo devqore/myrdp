@@ -36,6 +36,7 @@ class ProcessManager(object):
     def start(self, name, tabPage, *args, **kwargs):
         process = TabPageProcess(name, tabPage)
         self.add(process)
+        process.tabPage.appendText(u"Connecting to %s.." % name)
         process.start(*args, **kwargs)
         return process
 

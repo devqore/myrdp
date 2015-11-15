@@ -229,7 +229,10 @@ class PageTab(QtGui.QWidget):
         proc = self.sender() 
         txt = proc.readAllStandardOutput()
         QtCore.qDebug(txt)
-        self.textEdit.append(txt.data().rstrip('\n'))
+        self.appendText(txt.data().rstrip('\n'))
+
+    def appendText(self, text):
+        self.textEdit.append(text)
 
     def slotStateChanged(self, state):
         # append text to the text area only when process has been stopped
