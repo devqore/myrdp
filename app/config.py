@@ -21,11 +21,15 @@ class Config():
         if os.path.isabs(configFile):
             self.config = configFile
         else:
-            configDir = J(os.path.dirname(__file__), "..", "conf")
+            configDir = J(self.mainDirectory, "conf")
             self.config = J(configDir, configFile)
 
         with open(self.config, 'r') as f:
             self.data = yaml.load(f)
+
+    @property
+    def mainDirectory(self):
+        return J(os.path.dirname(__file__), "..")
 
     def getGlobalOption(self, option):
         try:
@@ -34,7 +38,13 @@ class Config():
             logging.error("Option '%s' not found in config file '%s'" % (option, self.config))
 
     def getConnectionString(self):
-        return self.getGlobalOption('connection_string')
+        connectionString = self.getGlobalOption('connection_string')
+        sqlitePrefix = "sqlite:///"
+        databasePath = connectionString.lstrip(sqlitePrefix)
+        # if path is not absolute set path as relative path to main dir
+        if not os.path.isabs(databasePath):
+            connectionString = sqlitePrefix + J(self.mainDirectory, databasePath)
+        return connectionString
 
     def getLogLevel(self):
         return self.getGlobalOption('log_level')

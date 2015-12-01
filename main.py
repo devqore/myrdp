@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 
 def argParser():
     parser = ArgumentParser(description='MyRDP')    
-    parser.add_argument("-c", "--config", default="config.yaml", help='config file (default: config.ini)')
+    parser.add_argument("-c", "--config", default="config.yaml", help='config file (default: config.yaml)')
     return parser.parse_args()
 
 
