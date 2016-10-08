@@ -2,6 +2,7 @@
 import os
 import logging
 import yaml
+import sys
 
 from app.utils import Singleton
 
@@ -29,7 +30,12 @@ class Config():
 
     @property
     def mainDirectory(self):
-        return J(os.path.dirname(__file__), "..")
+        # pyinstaller sets sys.frozen attribute
+        if getattr(sys, 'frozen', False):
+            mainDirectory = os.path.dirname(sys.executable)
+        else:
+            mainDirectory = J(os.path.dirname(__file__), "..")
+        return mainDirectory
 
     def getGlobalOption(self, option):
         try:

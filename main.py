@@ -7,7 +7,6 @@ import signal
 from app.gui.mainwindow import MainWindow
 from app.gui.mytabwidget import X11Embed
 
-# import sip # sip needed to build with bb-ffreeze
 from argparse import ArgumentParser
 
 

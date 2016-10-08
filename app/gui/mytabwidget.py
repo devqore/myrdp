@@ -37,12 +37,13 @@ class ControlButton(QtGui.QPushButton):
     offset = None
     w = 20
     h = 20
+    pageTabParent = None
 
     def __init__(self, pageTabParent):
         super(ControlButton, self).__init__(pageTabParent)
-
+        self.pageTabParent = pageTabParent
         # set initial position on right side 80 px from top
-        self.setGeometry(pageTabParent.width() - self.w, 80, self.w, self.h)
+        self.setGeometry(self.pageTabParent.width() - self.w, 80, self.w, self.h)
         self.currentPosition = Position.RIGHT
         self.show()
 
@@ -51,7 +52,7 @@ class ControlButton(QtGui.QPushButton):
         self.setIconSize(QtCore.QSize(self.w, self.h))
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        pageTabParent.resized.connect(self.fixPosition)
+        self.pageTabParent.resized.connect(self.fixPosition)
 
     def mousePressEvent(self, event):
         self.offset = event.pos()
@@ -60,7 +61,7 @@ class ControlButton(QtGui.QPushButton):
     def getMax(self):
         """ Max coordinates for x and y """
         geometry = self.geometry()
-        parentGeometry = self.parent().geometry()
+        parentGeometry = self.pageTabParent.geometry()
         maxX = parentGeometry.width() - geometry.width()
         maxY = parentGeometry.height() - geometry.height()
         return maxX, maxY

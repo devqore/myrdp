@@ -1,3 +1,4 @@
-PyYAML==3.11
-SQLAlchemy==0.9.9
+PyYAML
+SQLAlchemy
+pyinstaller
 PyQt4
