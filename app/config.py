@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
 import logging
-import yaml
+import os
+import re
 import sys
+import yaml
 
 from app.utils import Singleton
 
@@ -46,7 +47,7 @@ class Config():
     def getConnectionString(self):
         connectionString = self.getGlobalOption('connection_string')
         sqlitePrefix = "sqlite:///"
-        databasePath = connectionString.lstrip(sqlitePrefix)
+        databasePath = re.sub("^%s" % sqlitePrefix, "", connectionString)
         # if path is not absolute set path as relative path to main dir
         if not os.path.isabs(databasePath):
             connectionString = sqlitePrefix + J(self.mainDirectory, databasePath)
