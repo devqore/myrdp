@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         self.tray.activated.connect(self.trayActivated)
 
         self.trayMenu = QMenu()
-        self.trayMenu.addAction("Hide tray icon", self.tray.hide)
+        self.trayMenu.addAction("Hide tray icon", self.changeTrayIconVisibility)
         self.trayMenu.addAction("Quit", self.close)
 
         self.tray.setContextMenu(self.trayMenu)
@@ -98,6 +98,8 @@ class MainWindow(QMainWindow):
     def changeTrayIconVisibility(self):
         if self.tray.isVisible():
             self.tray.hide()
+            if not self.isVisible():
+                self.show()
         else:
             self.tray.show()
 
