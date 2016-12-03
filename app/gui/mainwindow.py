@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QSettings, Qt
-from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout
+from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout, QSystemTrayIcon
 
 from app import logging
 from app.config import Config
@@ -58,6 +58,7 @@ class MainWindow(QMainWindow):
         self.positionMenu.addAction("Right", lambda: self.setDockPosition(Qt.RightDockWidgetArea))
         self.positionMenu.addAction("Float", self.setDockFloat)
         self.globalMenu.addMenu(self.positionMenu)
+        self.globalMenu.addAction('Change tray icon visibility', self.changeTrayIconVisibility)
         self.globalMenu.addAction('Quit', self.close)
         self.ui.menu.setMenu(self.globalMenu)
 
@@ -70,9 +71,35 @@ class MainWindow(QMainWindow):
         self.tabWidget = MyTabWidget()
         self.setCentralWidget(self.tabWidget)
 
+        # set tray icon
+        self.tray = QSystemTrayIcon(QIcon(":/ico/myrdp.svg"))
+        self.tray.activated.connect(self.trayActivated)
+
+        self.trayMenu = QMenu()
+        self.trayMenu.addAction("Hide tray icon", self.tray.hide)
+        self.trayMenu.addAction("Quit", self.close)
+
+        self.tray.setContextMenu(self.trayMenu)
+
+        # host list
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
         self.restoreSettings()
+
+    def trayActivated(self, reason):
+        if reason != QSystemTrayIcon.Trigger:
+            return
+        if self.isVisible():
+            self.hide()
+        else:
+            self.show()
+            self.activateWindow()
+
+    def changeTrayIconVisibility(self):
+        if self.tray.isVisible():
+            self.tray.hide()
+        else:
+            self.tray.show()
 
     def setDockPosition(self, dockWidgetArea):
         if self.ui.hostsDock.isFloating():
@@ -186,21 +213,27 @@ class MainWindow(QMainWindow):
         settings = QSettings("MyRDP")
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("windowState", self.saveState())
+        settings.setValue('trayIconVisibility', self.tray.isVisible())
 
     def restoreSettings(self):
         settings = QSettings("MyRDP")
+
         try:
             self.restoreGeometry(settings.value("geometry").toByteArray())
             self.restoreState(settings.value("windowState").toByteArray())
         except Exception:
             logging.debug("No settings to restore")
 
+        # restore tray icon state
+        trayIconVisibility = settings.value('trayIconVisibility').toBool()
+        self.tray.setVisible(trayIconVisibility)
+
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:
             self.saveSettings()
             return
                
-        msgBox = QMessageBox(self, text="Are you soure do you want to quit?")
+        msgBox = QMessageBox(self, text="Are you sure do you want to quit?")
         msgBox.setWindowTitle("Exit confirmation")
         msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         ret = msgBox.exec_()
