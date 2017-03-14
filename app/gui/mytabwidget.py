@@ -274,6 +274,13 @@ class MyTabWidget(QtGui.QTabWidget):
         self.currentTabIdx = self.tab.tabAt(point)
         self.popMenu.exec_(self.tab.mapToGlobal(point))
 
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MiddleButton:
+            tabIdx = self.tab.tabAt(event.pos())
+            self.slotCloseTab(tabIdx)
+        else:
+            event.accept()
+
     def reconnect(self):
         self.currentTab.emitReconnect()
 
