@@ -15,4 +15,5 @@ You need:
 	+ PyQt4
 	+ PyYAML
     + SQLAlchemy
+    + alembic
 - xfreerdp or rdesktop command line tools 
