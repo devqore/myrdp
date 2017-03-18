@@ -13,6 +13,7 @@ class HostTable(Base):
     address = Column(String, nullable=False)
     user = Column(String)
     password = Column(String)
+    group = Column(String)
 
     def __repr__(self):
         return "<name='%s', address='%s', user='%s', password='%s'>" \

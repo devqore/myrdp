@@ -3,7 +3,6 @@ from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout, QSystemTrayIcon
 
 from app import logging
-from app.config import Config
 from app.client import ClientFactory
 from app.database import Database
 from app.hosts import Hosts
@@ -27,9 +26,8 @@ class DockWidgetTitleBar(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self, config):
         super(MainWindow, self).__init__()
-        self.config = Config(config)
+        self.config = config
         db = Database(self.config.getConnectionString())
-        db.create()
         self.hosts = Hosts(db)
 
         # menu used for each host

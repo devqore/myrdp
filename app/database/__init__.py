@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
+import os.path as path
+
+from alembic import command, config
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.config import Config
 from app.database.schema import Base
+
+
+class AlembicConfig(object):
+    def __init__(self, databaseUrl):
+        self.ctx = config.Config()
+        self.ctx.set_main_option("script_location",
+                                 path.join(path.dirname(path.realpath(__file__)), 'updates'))
+        self.ctx.set_main_option("sqlalchemy.url", databaseUrl)
 
 
 class Database(object):
@@ -17,15 +29,22 @@ class Database(object):
             engineString = Config().getConnectionString()
         self.engine = create_engine(engineString, echo=echo)
         Session = sessionmaker(bind=self.engine)
+        self.alembicConfig = AlembicConfig(engineString).ctx
         self.session = Session()
         self.metadata = Base.metadata
         self.metadata.bind = self.engine  # bind or not to bind ?
 
     def create(self):
-        self.metadata.create_all()
+        # stamp only when creating database
+        if len(self.engine.table_names()) == 0:
+            self.metadata.create_all()
+            command.stamp(self.alembicConfig, "head")
 
     def drop(self):
         self.metadata.drop_all()
+
+    def update(self):
+        command.upgrade(self.alembicConfig, "head")
 
     def recreate(self):
         self.drop()

@@ -4,6 +4,9 @@ from PyQt4.QtGui import QWidget, QApplication
 import sys
 import signal
 
+from app.config import Config
+from app.database import Database
+
 from app.gui.mainwindow import MainWindow
 from app.gui.mytabwidget import X11Embed
 
@@ -36,7 +39,13 @@ if __name__ == "__main__":
 
     app.focusChanged.connect(focusChanged)
 
-    mw = MainWindow(args.config)
+    config = Config(args.config)
+
+    db = Database(config.getConnectionString())
+    db.create()
+    db.update()
+
+    mw = MainWindow(config)
     mw.show()
 
     app.exec_()
