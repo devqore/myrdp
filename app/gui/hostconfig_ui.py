@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui/hostconfig.ui'
+# Form implementation generated from reading ui file 'hostconfig.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created by: PyQt4 UI code generator 4.12
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -60,6 +60,16 @@ class Ui_HostConfig(object):
         self.showPassword.setObjectName(_fromUtf8("showPassword"))
         self.horizontalLayout_2.addWidget(self.showPassword)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.group = QtGui.QComboBox(HostConfig)
+        self.group.setStatusTip(_fromUtf8(""))
+        self.group.setAccessibleName(_fromUtf8(""))
+        self.group.setAccessibleDescription(_fromUtf8(""))
+        self.group.setInputMethodHints(QtCore.Qt.ImhNone)
+        self.group.setEditable(True)
+        self.group.setMaxVisibleItems(100)
+        self.group.setFrame(True)
+        self.group.setObjectName(_fromUtf8("group"))
+        self.verticalLayout.addWidget(self.group)
         self.errorArea = QtGui.QVBoxLayout()
         self.errorArea.setObjectName(_fromUtf8("errorArea"))
         self.verticalLayout.addLayout(self.errorArea)

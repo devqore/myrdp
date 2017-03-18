@@ -20,6 +20,12 @@ class Hosts(object):
         hostsList = sum(self._db.session.query(HostTable.name), ())
         return sorted(hostsList)
 
+    def getGroupsList(self):
+        """
+        :return: list with group names
+        """
+        return sum(self._db.session.query(HostTable.group).filter(HostTable.group.isnot(None)).distinct(), ())
+
     def getFilteredHostsNames(self, queryFilter=None):
         def q(): return self._db.session.query(HostTable.name)
         if queryFilter:
@@ -35,8 +41,8 @@ class Hosts(object):
         """
         self._db.updateObject(host, values)
 
-    def create(self, name, address, user=None, password=None):
-        host = HostTable(name=name, address=address, user=user, password=password)
+    def create(self, name, address, user=None, password=None, group=None):
+        host = HostTable(name=name, address=address, user=user, password=password, group=group)
         self._db.createObject(host)
         return host
 

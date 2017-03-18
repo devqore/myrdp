@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtGui import QDialog, QLabel, QLineEdit
+from PyQt4.QtGui import QComboBox, QDialog, QLabel, QLineEdit
 from app.gui.hostconfig_ui import Ui_HostConfig
 
 
@@ -10,11 +10,12 @@ class HostConfigDialog(QDialog):
         self.ui.setupUi(self)
         self.ui.showPassword.clicked.connect(self.changePasswordVisibility)
         self.ui.showPassword.setToolTip("Show password")  # don't why not generated from ui file
+        self.ui.group.lineEdit().setPlaceholderText("Group")  # not available from designer
         self.hosts = hosts
         # label to use to show errors
         self.errorLabel = None
 
-        self.attributes = ['name', 'address', 'user', 'password']
+        self.attributes = ['name', 'address', 'user', 'password', 'group']
 
     def changePasswordVisibility(self):
         if self.ui.showPassword.isChecked():
@@ -28,15 +29,18 @@ class HostConfigDialog(QDialog):
         :return: value or None
         """
         field = getattr(self.ui, field)
-        value = field.text()
+        if not isinstance(field, QComboBox):
+            value = field.text()
+        else:
+            value = field.lineEdit().text()
         if value == '':
             return None
-        return value
+        return unicode(value)
 
     def collectFieldsValues(self):
         attributesDict = {}
         for attr in self.attributes:
-            attributesDict[attr] = unicode(self.getTextFieldValue(attr))
+            attributesDict[attr] = self.getTextFieldValue(attr)
         return attributesDict
 
     def acceptAddHost(self):
@@ -63,6 +67,11 @@ class HostConfigDialog(QDialog):
         self.errorLabel.setText(text)
         self.ui.errorArea.addWidget(self.errorLabel)
 
+    def setGroups(self, field):
+        field.addItem(str())  # add empty element on list begin
+        for group in self.hosts.getGroupsList():
+            field.addItem(group)
+
     def add(self):
         """
         :return: dictionary {
@@ -72,6 +81,8 @@ class HostConfigDialog(QDialog):
         """
         response = dict()
         self.ui.acceptButton.clicked.connect(self.acceptAddHost)
+        self.setGroups(self.ui.group)
+
         retCode = self.exec_()
         response["code"] = retCode
         self.ui.acceptButton.clicked.disconnect()
@@ -91,7 +102,16 @@ class HostConfigDialog(QDialog):
         host = self.hosts.get(hostName)
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
-            field.setText(getattr(host, attribute))
+            value = getattr(host, attribute, '')
+
+            if value is None:
+                value = ''
+
+            if attribute == "group":
+                self.setGroups(field)
+                field.lineEdit().setText(value)
+            else:
+                field.setText(value)
 
         self.ui.acceptButton.clicked.connect(lambda: self.acceptEditHost(host))
         retCode = self.exec_()
