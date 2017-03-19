@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QSettings, Qt
-from PyQt4.QtGui import QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout, QSystemTrayIcon
+from PyQt4.QtGui import QCheckBox, QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
 from app import logging
 from app.client import ClientFactory
@@ -49,6 +49,13 @@ class MainWindow(QMainWindow):
         # set global menu
         self.globalMenu = QMenu()
         self.globalMenu.addAction(QIcon(':/ico/add.svg'), 'Add host', self.addHost)
+
+        # groups menu
+        self.groups = dict()
+        self.groupsMenu = QMenu("Groups")
+        self.groupsMenu.aboutToShow.connect(self.setGroupsMenu)
+        self.globalMenu.addMenu(self.groupsMenu)
+
         # disable menu indicator
         self.ui.menu.setStyleSheet("QPushButton::menu-indicator {image: none;}")
         self.positionMenu = QMenu("Dock position")
@@ -79,10 +86,10 @@ class MainWindow(QMainWindow):
 
         self.tray.setContextMenu(self.trayMenu)
 
+        self.restoreSettings()
         # host list
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
-        self.restoreSettings()
 
     def trayActivated(self, reason):
         if reason != QSystemTrayIcon.Trigger:
@@ -100,6 +107,34 @@ class MainWindow(QMainWindow):
                 self.show()
         else:
             self.tray.show()
+
+    def setGroups(self):
+        groupList = self.hosts.getGroupsList()
+        for group in groupList:
+            if group not in self.groups:
+                # add new groups as visible
+                self.groups[group] = True
+
+        # remove not existing groups
+        keysToDelete = set(self.groups.keys()) - set(groupList)
+        for key in keysToDelete:
+            self.groups.pop(key)
+
+    def setGroupsMenu(self):
+        self.groupsMenu.clear()
+        for group, checked in self.groups.items():
+            checkbox = QCheckBox()
+            checkbox.setText(group)
+            checkbox.setChecked(checked)
+            action = QWidgetAction(self.groupsMenu)
+            action.setDefaultWidget(checkbox)
+            checkbox.clicked.connect(self.groupsVisibilityChanged)
+            self.groupsMenu.addAction(action)
+
+    def groupsVisibilityChanged(self, checked):
+        currentGroup = unicode(self.sender().text())
+        self.groups[currentGroup] = checked
+        self.setHostList()
 
     def setDockPosition(self, dockWidgetArea):
         if self.ui.hostsDock.isFloating():
@@ -173,7 +208,13 @@ class MainWindow(QMainWindow):
     def setHostList(self):
         """ set hosts list in list view """
         self.ui.hostsList.clear()
-        self.ui.hostsList.addItems(self.hosts.getFilteredHostsNames(self.ui.filter.text()))
+        self.setGroups()
+        hosts = self.hosts.getGroupedHostNames(self.ui.filter.text())
+        hostsToShow = []
+        for group, hosts in hosts.items():
+            if self.groups.get(group, True):
+                hostsToShow.extend(hosts)
+        self.ui.hostsList.addItems(hostsToShow)
     
     def slotShowHost(self, item):
         # on one click we activating tab and showing options
@@ -214,6 +255,7 @@ class MainWindow(QMainWindow):
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("windowState", self.saveState())
         settings.setValue('trayIconVisibility', self.tray.isVisible())
+        settings.setValue('groups', self.groups)
 
     def restoreSettings(self):
         settings = QSettings("MyRDP")
@@ -227,6 +269,8 @@ class MainWindow(QMainWindow):
         # restore tray icon state
         trayIconVisibility = settings.value('trayIconVisibility').toBool()
         self.tray.setVisible(trayIconVisibility)
+
+        self.groups = {unicode(k): v for k, v in settings.value('groups', {}).toPyObject().items()}
 
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:

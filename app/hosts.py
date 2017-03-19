@@ -26,13 +26,21 @@ class Hosts(object):
         """
         return sum(self._db.session.query(HostTable.group).filter(HostTable.group.isnot(None)).distinct(), ())
 
-    def getFilteredHostsNames(self, queryFilter=None):
-        def q(): return self._db.session.query(HostTable.name)
+    def getGroupedHostNames(self, queryFilter=None):
+        def q(): return self._db.session.query(HostTable.name, HostTable.group)
         if queryFilter:
             hostsList = q().filter(HostTable.name.like("%%%s%%" % queryFilter))
         else:
             hostsList = q()
-        return sorted(sum(hostsList, ()))
+
+        groupedHosts = dict()
+        for host, group in hostsList:
+            if group in groupedHosts.keys():
+                groupedHosts[group].append(host)
+            else:
+                groupedHosts[group] = [host]
+
+        return groupedHosts
 
     def updateHostValues(self, host, values):
         """
