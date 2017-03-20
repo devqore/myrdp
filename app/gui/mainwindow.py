@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QSettings, Qt
-from PyQt4.QtGui import QCheckBox, QMainWindow, QWidget, QMessageBox, QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
+from PyQt4.QtGui import QActionGroup, QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
+    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
 from app import logging
 from app.client import ClientFactory
@@ -24,6 +25,8 @@ class DockWidgetTitleBar(QWidget):
 
 
 class MainWindow(QMainWindow):
+    groups = dict()
+
     def __init__(self, config):
         super(MainWindow, self).__init__()
         self.config = config
@@ -32,10 +35,15 @@ class MainWindow(QMainWindow):
 
         # menu used for each host
         self.hostMenu = QMenu()
-        self.hostMenu.addAction(QIcon(':/ico/edit.svg'), "Edit", self.editHost)
-        self.hostMenu.addAction(QIcon(':/ico/remove.svg'), "Delete", self.deleteHost)
-        actions.addActionWithScreenChose(self.hostMenu, self.connectFrameless,
-                                         ':/ico/frameless.svg', "Connect frameless")
+        self.editAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.hostMenu)
+        self.editAction.triggered.connect(self.editHost)
+        self.deleteAction = QAction(QIcon(':/ico/remove.svg'), "Delete", self.hostMenu)
+        self.deleteAction.triggered.connect(self.deleteHost)
+        self.connectFramelessMenu = actions.generateScreenChoseMenu(self.hostMenu, self.connectFrameless,
+                                                                    ':/ico/frameless.svg', "Connect frameless")
+        self.hostMenu.addAction(self.editAction)
+        self.hostMenu.addAction(self.deleteAction)
+        self.hostMenu.addMenu(self.connectFramelessMenu)
 
         # setup main window
         self.ui = Ui_MainWindow()
@@ -51,7 +59,6 @@ class MainWindow(QMainWindow):
         self.globalMenu.addAction(QIcon(':/ico/add.svg'), 'Add host', self.addHost)
 
         # groups menu
-        self.groups = dict()
         self.groupsMenu = QMenu("Groups")
         self.groupsMenu.aboutToShow.connect(self.setGroupsMenu)
         self.globalMenu.addMenu(self.groupsMenu)
@@ -163,6 +170,9 @@ class MainWindow(QMainWindow):
     def getCurrentHostListItemName(self):
         return self.ui.hostsList.currentItem().text()
 
+    def getSelectedHosts(self):
+        return [host.text() for host in self.ui.hostsList.selectedItems()]
+
     def findHostItemByName(self, name):
         result = self.ui.hostsList.findItems(name, Qt.MatchExactly)
         resultLen = len(result)
@@ -171,8 +181,15 @@ class MainWindow(QMainWindow):
         return result[0]
 
     def slotShowHostContextMenu(self, pos):
-        """ slot needed to show menu in proper position, or i'm doing something wrong
-        """
+        def changeMenusVisibility(isEnabled):
+            self.connectFramelessMenu.setEnabled(isEnabled)
+            self.editAction.setEnabled(isEnabled)
+
+        if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
+            changeMenusVisibility(True)
+        else:
+            changeMenusVisibility(False)
+
         self.hostMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
 
     def addHost(self):
@@ -192,7 +209,8 @@ class MainWindow(QMainWindow):
             self.setHostList()
 
     def deleteHost(self):
-        self.hosts.delete(self.getCurrentHostListItemName())
+        for host in self.getSelectedHosts():
+            self.hosts.delete(host)
         self.setHostList()
 
     def connectFrameless(self, screenIndex=None):

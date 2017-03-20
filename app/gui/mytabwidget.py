@@ -267,8 +267,9 @@ class MyTabWidget(QtGui.QTabWidget):
         self.popMenu = QtGui.QMenu(self)
         self.popMenu.addAction(QtGui.QIcon(":/ico/refresh.svg"), "Reconnect", self.reconnect)
         self.popMenu.addAction(QtGui.QIcon(":/ico/detach.svg"), "Detach tab", self.detach)
-        actions.addActionWithScreenChose(self.popMenu, self.detachFrameless,
-                                         ':/ico/frameless.svg', "Connect frameless")
+        screenChoseMenu = actions.generateScreenChoseMenu(self.popMenu, self.detachFrameless,
+                                                          ':/ico/frameless.svg', "Connect frameless")
+        self.popMenu.addMenu(screenChoseMenu)
 
     def showContextMenu(self, point):
         self.currentTabIdx = self.tab.tabAt(point)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/mainwindow.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created by: PyQt4 UI code generator 4.12
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -87,6 +87,7 @@ class Ui_MainWindow(object):
         self.hostsList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.hostsList.setAutoFillBackground(True)
         self.hostsList.setAlternatingRowColors(True)
+        self.hostsList.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.hostsList.setWordWrap(True)
         self.hostsList.setObjectName(_fromUtf8("hostsList"))
         self.verticalLayout_3.addWidget(self.hostsList)
