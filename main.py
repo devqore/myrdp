@@ -21,7 +21,7 @@ def argParser():
 
 def focusChanged(lostFocus, hasFocus):
     hasFocusType = type(hasFocus)
-    if hasFocus is None or hasFocusType != X11Embed: # for e.g. focus is out from application, or is another widget
+    if hasFocus is None or hasFocusType != X11Embed:  # for e.g. focus is out from application, or is another widget
         keyG = QWidget.keyboardGrabber()  # find keyboardGrabber and releaseKeyboard
         if keyG is not None:
             keyG.releaseKeyboard()

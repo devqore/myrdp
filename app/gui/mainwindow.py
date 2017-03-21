@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import QSettings, Qt
-from PyQt4.QtGui import QActionGroup, QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
+from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
     QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
 from app import logging
@@ -8,6 +8,7 @@ from app.client import ClientFactory
 from app.database import Database
 from app.hosts import Hosts
 from app.gui import actions
+from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
@@ -30,20 +31,27 @@ class MainWindow(QMainWindow):
     def __init__(self, config):
         super(MainWindow, self).__init__()
         self.config = config
-        db = Database(self.config.getConnectionString())
-        self.hosts = Hosts(db)
+        self.db = Database(self.config.getConnectionString())
+        self.hosts = Hosts(self.db)
 
         # menu used for each host
         self.hostMenu = QMenu()
         self.editAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.hostMenu)
         self.editAction.triggered.connect(self.editHost)
+        self.hostMenu.addAction(self.editAction)
+
+        # todo: confirm for delete action
         self.deleteAction = QAction(QIcon(':/ico/remove.svg'), "Delete", self.hostMenu)
         self.deleteAction.triggered.connect(self.deleteHost)
+        self.hostMenu.addAction(self.deleteAction)
+
         self.connectFramelessMenu = actions.generateScreenChoseMenu(self.hostMenu, self.connectFrameless,
                                                                     ':/ico/frameless.svg', "Connect frameless")
-        self.hostMenu.addAction(self.editAction)
-        self.hostMenu.addAction(self.deleteAction)
         self.hostMenu.addMenu(self.connectFramelessMenu)
+
+        self.assignGroupAction = QAction("Assign group", self.hostMenu)
+        self.assignGroupAction.triggered.connect(self.assignGroup)
+        self.hostMenu.addAction(self.assignGroupAction)
 
         # setup main window
         self.ui = Ui_MainWindow()
@@ -126,6 +134,18 @@ class MainWindow(QMainWindow):
         keysToDelete = set(self.groups.keys()) - set(groupList)
         for key in keysToDelete:
             self.groups.pop(key)
+
+    def assignGroup(self):
+        groups = self.hosts.getGroupsList()
+        assignGroupDialog = AssignGroupDialog(groups)
+        groupToAssign = assignGroupDialog.assign()
+        if groupToAssign is not False:  # None could be used to unassign the group
+            groupToAssign = None if groupToAssign.isEmpty() else unicode(groupToAssign)
+            for hostName in self.getSelectedHosts():
+                host = self.hosts.get(hostName)
+                host.group = groupToAssign
+            self.db.tryCommit()  # todo: update should be done in hosts
+            self.setHostList()
 
     def setGroupsMenu(self):
         self.groupsMenu.clear()
