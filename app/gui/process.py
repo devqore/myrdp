@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore
-import logging
+from app.log import logger
 
 
 class ProcessManager(object):
@@ -16,16 +16,16 @@ class ProcessManager(object):
         try:
             processName = process.name
             self.processes.pop(processName)
-            logging.debug(u"Removed process %s" % processName)
+            logger.debug(u"Removed process %s" % processName)
         except KeyError:
-            logging.warning(u"Trying to remove not existing process..")
+            logger.warning(u"Trying to remove not existing process..")
 
     def killemall(self):
         for process in self.processes.values():
             try:
                 process.tabPage.close()
             except Exception as e:
-                logging.warning(u"Exception when trying to kill process..\n%s" % e)
+                logger.warning(u"Exception when trying to kill process..\n%s" % e)
 
     @property
     def hasActiveProcess(self):

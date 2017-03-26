@@ -54,7 +54,7 @@ class Config():
         return connectionString
 
     def getLogLevel(self):
-        return self.getGlobalOption('log_level')
+        return getattr(logging, self.getGlobalOption('log_level').upper(), logging.ERROR)
 
     def getRdpClient(self):
         clientType = self.getGlobalOption('client')

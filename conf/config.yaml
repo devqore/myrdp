@@ -1,7 +1,7 @@
 global:
   client: xfreerdp
   connection_string: sqlite:///myrdp.sqlite
-  log_level: debug
+  log_level: info
 
 xfreerdp:
   executable: xfreerdp

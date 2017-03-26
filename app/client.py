@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from app import logging
+from app.log import logger
 
 
 class Client(object):
@@ -51,8 +51,7 @@ class RdesktopClient(Client):
         if self.args:
             argsList.extend(self.args)
         argsList.append(self.host)
-        print argsList
-        logging.debug("Running command:\n%s %s" % (self.executable, " ".join(argsList)))
+        logger.debug("Running command:\n%s %s" % (self.executable, " ".join(argsList)))
         return self.executable, argsList
 
 
@@ -70,7 +69,7 @@ class FreerdpClient(Client):
         """
         argsList = ["/%s:%s" % (k, v) for k, v in self.settings.items()]
         argsList.extend(self.args)
-        logging.debug("Running command:\n%s %s" % (self.executable, " ".join(argsList)))
+        logger.debug("Running command:\n%s %s" % (self.executable, " ".join(argsList)))
         return self.executable, argsList
 
 

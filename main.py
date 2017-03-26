@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QWidget, QApplication
 import sys
 import signal
 
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QWidget, QApplication
+
+from app.log import logger
 from app.config import Config
 from app.database import Database
 
@@ -44,6 +46,8 @@ if __name__ == "__main__":
     db = Database(config.getConnectionString())
     db.create()
     db.update()
+
+    logger.setLevel(config.getLogLevel())
 
     mw = MainWindow(config)
     mw.show()

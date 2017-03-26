@@ -3,7 +3,6 @@ from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
     QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
-from app import logging
 from app.client import ClientFactory
 from app.database import Database
 from app.hosts import Hosts
@@ -13,6 +12,7 @@ from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.process import ProcessManager
+from app.log import logger
 
 
 class DockWidgetTitleBar(QWidget):
@@ -197,7 +197,7 @@ class MainWindow(QMainWindow):
         result = self.ui.hostsList.findItems(name, Qt.MatchExactly)
         resultLen = len(result)
         if resultLen != 1:  # should be only one host
-            logging.error("Host not found. Got %d results" % resultLen)
+            logger.error("Host not found. Got %d results" % resultLen)
         return result[0]
 
     def slotShowHostContextMenu(self, pos):
@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(settings.value("geometry").toByteArray())
             self.restoreState(settings.value("windowState").toByteArray())
         except Exception:
-            logging.debug("No settings to restore")
+            logger.debug("No settings to restore")
 
         # restore tray icon state
         trayIconVisibility = settings.value('trayIconVisibility').toBool()
