@@ -2,6 +2,7 @@
 from PyQt4 import QtCore, QtGui
 
 from app.gui import actions
+from app.log import logger
 
 
 class X11Embed(QtGui.QX11EmbedContainer):
@@ -229,7 +230,7 @@ class PageTab(QtGui.QWidget):
     def slotRead(self):
         proc = self.sender() 
         txt = proc.readAllStandardOutput()
-        QtCore.qDebug(txt)
+        logger.debug(txt)
         self.appendText(txt.data().rstrip('\n'))
 
     def appendText(self, text):

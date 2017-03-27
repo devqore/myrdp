@@ -1,6 +1,7 @@
 global:
   client: xfreerdp
   connection_string: sqlite:///myrdp.sqlite
+  # logging level: debug, info, warning, error, critical
   log_level: info
 
 xfreerdp:
