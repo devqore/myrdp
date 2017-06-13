@@ -38,7 +38,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralWidget)
         self.hostsDock = QtGui.QDockWidget(MainWindow)
         self.hostsDock.setAutoFillBackground(False)
-        self.hostsDock.setFeatures(QtGui.QDockWidget.DockWidgetFloatable)
+        self.hostsDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable|QtGui.QDockWidget.DockWidgetFloatable)
         self.hostsDock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea|QtCore.Qt.RightDockWidgetArea)
         self.hostsDock.setObjectName(_fromUtf8("hostsDock"))
         self.hostsWidget = QtGui.QWidget()

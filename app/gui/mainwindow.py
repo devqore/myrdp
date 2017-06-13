@@ -90,6 +90,8 @@ class MainWindow(QMainWindow):
         # set tab widget
         self.tabWidget = MyTabWidget()
         self.setCentralWidget(self.tabWidget)
+        self.tabWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tabWidget.customContextMenuRequested.connect(self.showCentralWidgetContextMenu)
 
         # set tray icon
         self.tray = QSystemTrayIcon(QIcon(":/ico/myrdp.svg"))
@@ -99,12 +101,38 @@ class MainWindow(QMainWindow):
         self.trayMenu.addAction("Hide tray icon", self.changeTrayIconVisibility)
         self.trayMenu.addAction("Quit", self.close)
 
-        self.tray.setContextMenu(self.trayMenu)
+        connectHostMenu = self.getConnectHostContextMenu()
+        self.trayMenu.addMenu(connectHostMenu)
 
+        self.tray.setContextMenu(self.trayMenu)
         self.restoreSettings()
         # host list
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
+
+    def getConnectHostContextMenu(self):
+        # stay with me after functions ends
+        self.connectMenu = QMenu("Connect")
+        self.groupMenus = []
+
+        groupedHosts = self.hosts.getGroupedHostNames()
+        groups = sorted(groupedHosts.keys(), key=lambda x: (x is None, x))
+        for group in groups:
+            hosts = sorted(groupedHosts[group])
+            if group is None:
+                groupMenu = self.connectMenu
+            else:
+                groupMenu = QMenu(group)
+                self.groupMenus.append(groupMenu)
+                self.connectMenu.addMenu(groupMenu)
+            for host in hosts:
+                groupMenu.addAction(host)
+
+        self.connectMenu.triggered.connect(self.connectHostFromMenu)
+        return self.connectMenu
+
+    def connectHostFromMenu(self, action):
+        self.connectHost(unicode(action.text()))
 
     def trayActivated(self, reason):
         if reason != QSystemTrayIcon.Trigger:
@@ -199,6 +227,29 @@ class MainWindow(QMainWindow):
         if resultLen != 1:  # should be only one host
             logger.error("Host not found. Got %d results" % resultLen)
         return result[0]
+
+    def showCentralWidgetContextMenu(self, pos):
+        menu = QMenu()
+        title = self.ui.hostsDock.windowTitle()
+
+        hostsDockAction = menu.addAction(title)
+        hostsDockAction.setCheckable(True)
+        hostsDockAction.setChecked(self.ui.hostsDock.isVisible())
+        hostsDockAction.triggered.connect(self.changeHostsDockWidgetVisibility)
+
+        hostsDockAction = menu.addAction("Tray icon")
+        hostsDockAction.setCheckable(True)
+        hostsDockAction.setChecked(self.tray.isVisible())
+        hostsDockAction.triggered.connect(self.changeTrayIconVisibility)
+
+        connectHostMenu = self.getConnectHostContextMenu()
+        menu.addMenu(connectHostMenu)
+
+        menu.exec_(self.tabWidget.mapToGlobal(pos))
+
+    def changeHostsDockWidgetVisibility(self):
+        isVisible = self.ui.hostsDock.isVisible()
+        self.ui.hostsDock.setVisible(not isVisible)
 
     def slotShowHostContextMenu(self, pos):
         def changeMenusVisibility(isEnabled):
