@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+from sqlalchemy.sql.expression import case, collate
+
 from app.database.schema import HostTable
 
 
@@ -27,19 +30,22 @@ class Hosts(object):
         return sum(self._db.session.query(HostTable.group).filter(HostTable.group.isnot(None)).distinct(), ())
 
     def getGroupedHostNames(self, queryFilter=None):
-        def q(): return self._db.session.query(HostTable.name, HostTable.group)
+        def q():
+            return self._db.session.query(HostTable.name, HostTable.group).order_by(
+                case([(HostTable.group == None, 1)], else_=0),  # nulls last
+                collate(HostTable.group, 'NOCASE'),
+                collate(HostTable.name, 'NOCASE'))
         if queryFilter:
             hostsList = q().filter(HostTable.name.like("%%%s%%" % queryFilter))
         else:
             hostsList = q()
 
-        groupedHosts = dict()
+        groupedHosts = OrderedDict()
         for host, group in hostsList:
             if group in groupedHosts.keys():
                 groupedHosts[group].append(host)
             else:
                 groupedHosts[group] = [host]
-
         return groupedHosts
 
     def updateHostValues(self, host, values):

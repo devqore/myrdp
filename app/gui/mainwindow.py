@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from PyQt4 import QtGui
+
 from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
     QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
@@ -27,6 +29,7 @@ class DockWidgetTitleBar(QWidget):
 
 class MainWindow(QMainWindow):
     groups = dict()
+    typeQListWidgetHeader = 1000
 
     def __init__(self, config):
         super(MainWindow, self).__init__()
@@ -99,10 +102,9 @@ class MainWindow(QMainWindow):
 
         self.trayMenu = QMenu()
         self.trayMenu.addAction("Hide tray icon", self.changeTrayIconVisibility)
+        self.connectHostMenu = self.getConnectHostContextMenu()
+        self.trayMenu.addMenu(self.connectHostMenu)
         self.trayMenu.addAction("Quit", self.close)
-
-        connectHostMenu = self.getConnectHostContextMenu()
-        self.trayMenu.addMenu(connectHostMenu)
 
         self.tray.setContextMenu(self.trayMenu)
         self.restoreSettings()
@@ -115,10 +117,8 @@ class MainWindow(QMainWindow):
         self.connectMenu = QMenu("Connect")
         self.groupMenus = []
 
-        groupedHosts = self.hosts.getGroupedHostNames()
-        groups = sorted(groupedHosts.keys(), key=lambda x: (x is None, x))
-        for group in groups:
-            hosts = sorted(groupedHosts[group])
+        hosts = self.hosts.getGroupedHostNames()
+        for group, hosts in hosts.items():
             if group is None:
                 groupMenu = self.connectMenu
             else:
@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
         else:
             self.tray.show()
 
-    def setGroups(self):
+    def refreshGroups(self):
         groupList = self.hosts.getGroupsList()
         for group in groupList:
             if group not in self.groups:
@@ -251,10 +251,20 @@ class MainWindow(QMainWindow):
         isVisible = self.ui.hostsDock.isVisible()
         self.ui.hostsDock.setVisible(not isVisible)
 
+    def isHostListHeader(self, item):
+        if item.type() == self.typeQListWidgetHeader:
+            return True
+        return False
+
     def slotShowHostContextMenu(self, pos):
         def changeMenusVisibility(isEnabled):
             self.connectFramelessMenu.setEnabled(isEnabled)
             self.editAction.setEnabled(isEnabled)
+
+        # ignore context menu for group headers
+        item = self.ui.hostsList.itemAt(pos)
+        if self.isHostListHeader(item):
+            return
 
         if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
             changeMenusVisibility(True)
@@ -297,19 +307,26 @@ class MainWindow(QMainWindow):
     def setHostList(self):
         """ set hosts list in list view """
         self.ui.hostsList.clear()
-        self.setGroups()
+        self.refreshGroups()
         hosts = self.hosts.getGroupedHostNames(self.ui.filter.text())
-        hostsToShow = []
-        for group, hosts in hosts.items():
+        for group, hostsList in hosts.items():
             if self.groups.get(group, True):
-                hostsToShow.extend(hosts)
-        self.ui.hostsList.addItems(hostsToShow)
-    
+                if group is None:
+                    group = "unassigned"
+                groupHeader = QtGui.QListWidgetItem(type=self.typeQListWidgetHeader)
+                groupLabel = QtGui.QLabel(group)
+                groupLabel.setProperty('class', 'group-title')
+                self.ui.hostsList.addItem(groupHeader)
+                self.ui.hostsList.setItemWidget(groupHeader, groupLabel)
+                self.ui.hostsList.addItems(hostsList)
+
     def slotShowHost(self, item):
         # on one click we activating tab and showing options
         self.tabWidget.activateTab(item)
 
     def slotConnectHost(self, item):
+        if self.isHostListHeader(item):
+            return
         self.connectHost(unicode(item.text()))
 
     def connectHost(self, hostId, frameless=False, screenIndex=None):

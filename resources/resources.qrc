@@ -14,4 +14,7 @@
     <file>remove.svg</file>
     <file>tab_menu.png</file>
   </qresource>
+  <qresource prefix="style">
+    <file>style.qss</file>
+  </qresource>
 </RCC>

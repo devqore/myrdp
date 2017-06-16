@@ -2,7 +2,7 @@
 import sys
 import signal
 
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, QFile
 from PyQt4.QtGui import QWidget, QApplication
 
 from app.log import logger
@@ -33,6 +33,12 @@ def focusChanged(lostFocus, hasFocus):
 if __name__ == "__main__":   
     args = argParser()
     app = QApplication(sys.argv)
+
+    styleFile = QFile(":/style/style.qss")
+    styleFile.open(QFile.ReadOnly)
+    data = styleFile.readAll()
+    app.setStyleSheet(unicode(data))
+
     # show icons in menus
     app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
 

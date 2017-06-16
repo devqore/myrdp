@@ -104,6 +104,5 @@ class Ui_MainWindow(object):
         self.menu.setToolTip(_translate("MainWindow", "Menu", None))
         self.menu.setShortcut(_translate("MainWindow", "Ctrl+R", None))
         self.filter.setPlaceholderText(_translate("MainWindow", "Filter", None))
-        self.hostsList.setSortingEnabled(True)
 
 import resources_rc
