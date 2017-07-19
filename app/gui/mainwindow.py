@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtGui
 
-from PyQt4.QtCore import QSettings, Qt
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
     QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
 from app.client import ClientFactory
+from app.config import Config
 from app.database import Database
 from app.hosts import Hosts
 from app.gui import actions
@@ -14,6 +15,7 @@ from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.process import ProcessManager
+from app.gui.settingspage import SettingsPage
 from app.log import logger
 
 
@@ -31,9 +33,9 @@ class MainWindow(QMainWindow):
     groups = dict()
     typeQListWidgetHeader = 1000
 
-    def __init__(self, config):
+    def __init__(self):
         super(MainWindow, self).__init__()
-        self.config = config
+        self.config = Config()
         self.db = Database(self.config.getConnectionString())
         self.hosts = Hosts(self.db)
 
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow):
         self.positionMenu.addAction("Float", self.setDockFloat)
         self.globalMenu.addMenu(self.positionMenu)
         self.globalMenu.addAction('Change tray icon visibility', self.changeTrayIconVisibility)
+        self.globalMenu.addAction('Settings', self.showSettings)
         self.globalMenu.addAction('Quit', self.close)
         self.ui.menu.setMenu(self.globalMenu)
 
@@ -130,6 +133,16 @@ class MainWindow(QMainWindow):
 
         self.connectMenu.triggered.connect(self.connectHostFromMenu)
         return self.connectMenu
+
+    def showSettings(self):
+        settingsWidget = self.findChild(QWidget, "settings")
+        if settingsWidget is None:
+            self.settingsWidget = SettingsPage()
+            self.settingsWidget.setObjectName("settings")
+            self.tabWidget.insertTab(0, self.settingsWidget, QIcon(":/ico/settings.svg"), 'Settings')
+
+        index = self.tabWidget.indexOf(self.settingsWidget)
+        self.tabWidget.setCurrentIndex(index)
 
     def connectHostFromMenu(self, action):
         self.connectHost(unicode(action.text()))
@@ -357,26 +370,23 @@ class MainWindow(QMainWindow):
         return remoteClient.getComposedCommand()
 
     def saveSettings(self):
-        settings = QSettings("MyRDP")
-        settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("windowState", self.saveState())
-        settings.setValue('trayIconVisibility', self.tray.isVisible())
-        settings.setValue('groups', self.groups)
+        self.config.setValue("geometry", self.saveGeometry())
+        self.config.setValue("windowState", self.saveState())
+        self.config.setValue('trayIconVisibility', self.tray.isVisible())
+        self.config.setValue('groups', self.groups)
 
     def restoreSettings(self):
-        settings = QSettings("MyRDP")
-
         try:
-            self.restoreGeometry(settings.value("geometry").toByteArray())
-            self.restoreState(settings.value("windowState").toByteArray())
+            self.restoreGeometry(self.config.getValue("geometry").toByteArray())
+            self.restoreState(self.config.getValue("windowState").toByteArray())
         except Exception:
             logger.debug("No settings to restore")
 
         # restore tray icon state
-        trayIconVisibility = settings.value('trayIconVisibility').toBool()
+        trayIconVisibility = self.config.getValue('trayIconVisibility').toBool()
         self.tray.setVisible(trayIconVisibility)
 
-        self.groups = {unicode(k): v for k, v in settings.value('groups', {}).toPyObject().items()}
+        self.groups = {unicode(k): v for k, v in self.config.getValue('groups', {}).toPyObject().items()}
 
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:

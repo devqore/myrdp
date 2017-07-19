@@ -12,14 +12,6 @@ from app.database import Database
 from app.gui.mainwindow import MainWindow
 from app.gui.mytabwidget import X11Embed
 
-from argparse import ArgumentParser
-
-
-def argParser():
-    parser = ArgumentParser(description='MyRDP')    
-    parser.add_argument("-c", "--config", default="config.yaml", help='config file (default: config.yaml)')
-    return parser.parse_args()
-
 
 def focusChanged(lostFocus, hasFocus):
     hasFocusType = type(hasFocus)
@@ -31,7 +23,6 @@ def focusChanged(lostFocus, hasFocus):
         hasFocus.grabKeyboard()
 
 if __name__ == "__main__":   
-    args = argParser()
     app = QApplication(sys.argv)
 
     styleFile = QFile(":/style/style.qss")
@@ -47,15 +38,14 @@ if __name__ == "__main__":
 
     app.focusChanged.connect(focusChanged)
 
-    config = Config(args.config)
+    config = Config()
+    config.setLogLevel()
 
     db = Database(config.getConnectionString())
     db.create()
     db.update()
 
-    logger.setLevel(config.getLogLevel())
-
-    mw = MainWindow(config)
+    mw = MainWindow()
     mw.show()
 
     app.exec_()

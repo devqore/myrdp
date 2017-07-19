@@ -12,6 +12,8 @@
     <file>myrdp.svg</file>
     <file>refresh.svg</file>
     <file>remove.svg</file>
+    <file>settings.svg</file>
+    <file>open.svg</file>
     <file>tab_menu.png</file>
   </qresource>
   <qresource prefix="style">

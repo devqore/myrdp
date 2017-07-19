@@ -13,7 +13,17 @@ python main.py
 You need:
 - python 2.7
 	+ PyQt4
-	+ PyYAML
     + SQLAlchemy
     + alembic
-- xfreerdp or rdesktop command line tools 
+- xfreerdp command line tools
+
+
+Release notes
+=============
+
+2017.1:
+-------
+
+- config.yaml removed, settings are available from ui
+- default location of database file changed to $HOME/.config/myrdp/myrdp.sqlite (file should be moved manually or file location can be selected in the settings tab)
+- rdesktop removed from settings

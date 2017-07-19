@@ -274,7 +274,8 @@ class MyTabWidget(QtGui.QTabWidget):
 
     def showContextMenu(self, point):
         self.currentTabIdx = self.tab.tabAt(point)
-        self.popMenu.exec_(self.tab.mapToGlobal(point))
+        if not self.currentTab.objectName() == "settings":
+            self.popMenu.exec_(self.tab.mapToGlobal(point))
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MiddleButton:

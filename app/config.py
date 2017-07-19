@@ -1,33 +1,30 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
-import re
 import sys
-import yaml
 
-from app.utils import Singleton
-
+from app.log import logger
+from PyQt4.QtCore import QSettings
 J = os.path.join
 
 
-class Config():
-    """ Singleton class to manage configuration """
+class Config(object):
 
-    __metaclass__ = Singleton
+    defaultFreerdpArgs = "+clipboard /cert-ignore +drives /drive:home,/home -themes +compression /gdi:sw +auto-reconnect"
 
-    def __init__(self, configFile):
-        """
-        :param configFile: Absolute path to config file or file name (from conf dir)
-        :return:
-        """
-        if os.path.isabs(configFile):
-            self.config = configFile
-        else:
-            configDir = J(self.mainDirectory, "conf")
-            self.config = J(configDir, configFile)
+    def __init__(self):
+        self.settings = QSettings("myrdp", "settings")
+        if not os.path.isdir(self.configDirectory):
+            os.makedirs(self.configDirectory)
 
-        with open(self.config, 'r') as f:
-            self.data = yaml.load(f)
+    def setValue(self, setting, value):
+        return self.settings.setValue(setting, value)
+
+    def getValue(self, setting, defaultValue=None):
+        return self.settings.value(setting, defaultValue)
+
+    def getStringValue(self, setting, defaultValue=None):
+        return self.getValue(setting, defaultValue).toString()
 
     @property
     def mainDirectory(self):
@@ -38,28 +35,57 @@ class Config():
             mainDirectory = J(os.path.dirname(__file__), "..")
         return mainDirectory
 
-    def getGlobalOption(self, option):
-        try:
-            return self.data['global'][option]
-        except KeyError:
-            logging.error("Option '%s' not found in config file '%s'" % (option, self.config))
+    @property
+    def configDirectory(self):
+        return os.path.dirname(unicode(self.settings.fileName()))
+
+    @property
+    def databaseLocation(self):
+        defaultLocation = J(self.configDirectory, "myrdp.sqlite")
+        location = self.getStringValue('database_location', defaultLocation)
+        if location == '':
+            location = defaultLocation
+        return location
+
+    def setDatabaseLocation(self, location):
+        self.config.setValue('database_location', location)
 
     def getConnectionString(self):
-        connectionString = self.getGlobalOption('connection_string')
-        sqlitePrefix = "sqlite:///"
-        databasePath = re.sub("^%s" % sqlitePrefix, "", connectionString)
-        # if path is not absolute set path as relative path to main dir
-        if not os.path.isabs(databasePath):
-            connectionString = sqlitePrefix + J(self.mainDirectory, databasePath)
+        connectionString = u"sqlite:///%s" % self.databaseLocation
+        logging.debug(connectionString)
         return connectionString
 
-    def getLogLevel(self):
-        return getattr(logging, self.getGlobalOption('log_level').upper(), logging.ERROR)
+    @property
+    def freerdpArgs(self):
+        args = self.getStringValue('freerdp_arguments', self.defaultFreerdpArgs)
+        return args
+
+    def setFreerdpArgs(self, freerdpArgs):
+        self.setValue('freerdp_arguments', freerdpArgs)
+
+    @property
+    def freerdpExecutable(self):
+        return self.getStringValue('freerdp_executable', 'xfreerdp')
+
+    def setFreerdpExecutable(self, freerdpExecutable):
+        self.setValue('freerdp_executable', freerdpExecutable)
+
+    @property
+    def logLevel(self):
+        return unicode(self.getStringValue('logging_level', "error"))
+
+    def setLogLevel(self, loggingLevel=None):
+        if loggingLevel:
+            self.setValue('logging_level', loggingLevel)
+        logger.setLevel(getattr(logging, self.logLevel.upper()))
+
+    @property
+    def loggingLevels(self):
+        return ["error", "debug"]
 
     def getRdpClient(self):
-        clientType = self.getGlobalOption('client')
-        return clientType, self.data[clientType]
-
-    def _drop(self):
-        """ Used only for test purposes """
-        Singleton(self)._instances = {}
+        data = {
+            "executable": self.freerdpExecutable,
+            "args": self.freerdpArgs
+        }
+        return "xfreerdp", data

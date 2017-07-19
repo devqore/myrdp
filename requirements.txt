@@ -1,4 +1,3 @@
-PyYAML
 SQLAlchemy
 pyinstaller
 PyQt4
