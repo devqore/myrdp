@@ -2,12 +2,24 @@ MyRDP - Remote desktop manager
 
 [![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/2FoynZj-QFM)
 
-To start MyRDP run:
+Run from binaries
+-----------------
+
+Install xfreerdp package (Arch Linux: community/freerdp or aur/freerdp-git, Ubuntu: freerdp-x11) and than run:
+```bash
+wget -c https://github.com/szatanszmatan/myrdp/releases/download/2017.1/myrdp-2017.1.tar.bz2
+tar -xvf myrdp-2017.1.tar.bz2
+./myrdp-2017.1/myrdp
+```
+
+Run from sources
+----------------
 
 `````
 git clone https://github.com/szatanszmatan/myrdp.git   
 cd myrdp   
-python main.py
+pip install -r requirements.txt
+python2 main.py
 `````
 
 You need:
@@ -15,15 +27,4 @@ You need:
 	+ PyQt4
     + SQLAlchemy
     + alembic
-- xfreerdp command line tools
-
-
-Release notes
-=============
-
-2017.1:
--------
-
-- config.yaml removed, settings are available from ui
-- default location of database file changed to $HOME/.config/myrdp/myrdp.sqlite (file should be moved manually or file location can be selected in the settings tab)
-- rdesktop removed from settings
+- xfreerdp command line tool
