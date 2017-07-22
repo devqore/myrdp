@@ -1,11 +1,16 @@
 MyRDP - Remote desktop manager  
 
-[![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/2FoynZj-QFM)
+Prerequisites
+-------------
+
+xfreerdp command line tool:
+- Arch Linux: community/freerdp or aur/freerdp-git 
+- Ubuntu: freerdp-x11 
+
 
 Run from binaries
 -----------------
 
-Install xfreerdp package (Arch Linux: community/freerdp or aur/freerdp-git, Ubuntu: freerdp-x11) and than run:
 ```bash
 wget -c https://github.com/szatanszmatan/myrdp/releases/download/2017.1/myrdp-2017.1.tar.bz2
 tar -xvf myrdp-2017.1.tar.bz2
@@ -15,16 +20,13 @@ tar -xvf myrdp-2017.1.tar.bz2
 Run from sources
 ----------------
 
-`````
+```bash
 git clone https://github.com/szatanszmatan/myrdp.git   
 cd myrdp   
 pip install -r requirements.txt
 python2 main.py
-`````
+```
 
-You need:
-- python 2.7
-	+ PyQt4
-    + SQLAlchemy
-    + alembic
-- xfreerdp command line tool
+
+[![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/2FoynZj-QFM)
+
