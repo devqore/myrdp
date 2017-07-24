@@ -48,7 +48,7 @@ class Config(object):
         return location
 
     def setDatabaseLocation(self, location):
-        self.config.setValue('database_location', location)
+        self.setValue('database_location', location)
 
     def getConnectionString(self):
         connectionString = u"sqlite:///%s" % self.databaseLocation
