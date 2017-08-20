@@ -46,7 +46,6 @@ if __name__ == "__main__":
     db.update()
 
     mw = MainWindow()
-    mw.show()
 
     app.exec_()
     app.deleteLater()

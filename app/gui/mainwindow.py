@@ -29,6 +29,30 @@ class DockWidgetTitleBar(QWidget):
         self.setLayout(lay)
 
 
+class ConnectHostMenu(QMenu):
+    def __init__(self, hosts, title="Connect", parent=None):
+        self.hosts = hosts
+        self.groupMenus = []
+
+        super(ConnectHostMenu, self).__init__(title, parent)
+        self.aboutToShow.connect(self.setHosts)
+
+    def setHosts(self):
+        self.clear()
+        self.groupMenus = []  # keep created menus, after functions ends
+
+        hosts = self.hosts.getGroupedHostNames()
+        for group, hosts in hosts.items():
+            if group is None:
+                groupMenu = self
+            else:
+                groupMenu = QMenu(group)
+                self.groupMenus.append(groupMenu)
+                self.addMenu(groupMenu)
+            for host in hosts:
+                groupMenu.addAction(host)
+
+
 class MainWindow(QMainWindow):
     groups = dict()
     typeQListWidgetHeader = 1000
@@ -105,8 +129,9 @@ class MainWindow(QMainWindow):
 
         self.trayMenu = QMenu()
         self.trayMenu.addAction("Hide tray icon", self.changeTrayIconVisibility)
-        self.connectHostMenu = self.getConnectHostContextMenu()
-        self.trayMenu.addMenu(self.connectHostMenu)
+        self.connectHostMenuTray = ConnectHostMenu(self.hosts)
+        self.connectHostMenuTray.triggered.connect(self.connectHostFromTrayMenu)
+        self.trayMenu.addMenu(self.connectHostMenuTray)
         self.trayMenu.addAction("Quit", self.close)
 
         self.tray.setContextMenu(self.trayMenu)
@@ -114,25 +139,6 @@ class MainWindow(QMainWindow):
         # host list
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
-
-    def getConnectHostContextMenu(self):
-        # stay with me after functions ends
-        self.connectMenu = QMenu("Connect")
-        self.groupMenus = []
-
-        hosts = self.hosts.getGroupedHostNames()
-        for group, hosts in hosts.items():
-            if group is None:
-                groupMenu = self.connectMenu
-            else:
-                groupMenu = QMenu(group)
-                self.groupMenus.append(groupMenu)
-                self.connectMenu.addMenu(groupMenu)
-            for host in hosts:
-                groupMenu.addAction(host)
-
-        self.connectMenu.triggered.connect(self.connectHostFromMenu)
-        return self.connectMenu
 
     def showSettings(self):
         settingsWidget = self.findChild(QWidget, "settings")
@@ -146,6 +152,11 @@ class MainWindow(QMainWindow):
 
     def connectHostFromMenu(self, action):
         self.connectHost(unicode(action.text()))
+
+    def connectHostFromTrayMenu(self, action):
+        tabPage = self.connectHost(unicode(action.text()))
+        if not self.isVisible():
+            self.tabWidget.setDetached(True, tabPage)
 
     def trayActivated(self, reason):
         if reason != QSystemTrayIcon.Trigger:
@@ -255,8 +266,9 @@ class MainWindow(QMainWindow):
         hostsDockAction.setChecked(self.tray.isVisible())
         hostsDockAction.triggered.connect(self.changeTrayIconVisibility)
 
-        connectHostMenu = self.getConnectHostContextMenu()
-        menu.addMenu(connectHostMenu)
+        connectHostMenuTray = ConnectHostMenu(self.hosts, "Connect")
+        connectHostMenuTray.triggered.connect(self.connectHostFromMenu)
+        menu.addMenu(connectHostMenuTray)
 
         menu.exec_(self.tabWidget.mapToGlobal(pos))
 
@@ -265,7 +277,7 @@ class MainWindow(QMainWindow):
         self.ui.hostsDock.setVisible(not isVisible)
 
     def isHostListHeader(self, item):
-        if item.type() == self.typeQListWidgetHeader:
+        if not item or item.type() == self.typeQListWidgetHeader:
             return True
         return False
 
@@ -276,6 +288,7 @@ class MainWindow(QMainWindow):
 
         # ignore context menu for group headers
         item = self.ui.hostsList.itemAt(pos)
+
         if self.isHostListHeader(item):
             return
 
@@ -352,6 +365,7 @@ class MainWindow(QMainWindow):
 
         execCmd, opts = self.getCmd(tabPage, hostId)
         ProcessManager.start(hostId, tabPage, execCmd, opts)
+        return tabPage
 
     def getCmd(self, tabPage, hostName):
         host = self.hosts.get(hostName)
@@ -373,6 +387,7 @@ class MainWindow(QMainWindow):
         self.config.setValue("geometry", self.saveGeometry())
         self.config.setValue("windowState", self.saveState())
         self.config.setValue('trayIconVisibility', self.tray.isVisible())
+        self.config.setValue('mainWindowVisibility', self.isVisible())
         self.config.setValue('groups', self.groups)
 
     def restoreSettings(self):
@@ -385,6 +400,12 @@ class MainWindow(QMainWindow):
         # restore tray icon state
         trayIconVisibility = self.config.getValue('trayIconVisibility').toBool()
         self.tray.setVisible(trayIconVisibility)
+
+        if self.tray.isVisible():
+            mainWindowVisibility = self.config.getValue('mainWindowVisibility').toBool()
+            self.setVisible(mainWindowVisibility)
+        else:  # it tray icon is not visible, always show main window
+            self.show()
 
         self.groups = {unicode(k): v for k, v in self.config.getValue('groups', {}).toPyObject().items()}
 
