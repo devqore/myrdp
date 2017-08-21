@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtGui
 
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, QCoreApplication
 from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
     QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
 
@@ -412,6 +412,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:
             self.saveSettings()
+            QCoreApplication.exit()
             return
                
         msgBox = QMessageBox(self, text="Are you sure do you want to quit?")
@@ -425,3 +426,4 @@ class MainWindow(QMainWindow):
         self.saveSettings()
         ProcessManager.killemall()
         event.accept()
+        QCoreApplication.exit()

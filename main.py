@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     # show icons in menus
     app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+    app.setQuitOnLastWindowClosed(False)
 
     # finish app with ctrl+c
     signal.signal(signal.SIGINT, signal.SIG_DFL)
