@@ -13,9 +13,12 @@ class Config(object):
     defaultFreerdpArgs = "+clipboard /cert-ignore +drives /drive:home,/home -themes +compression /gdi:sw +auto-reconnect"
 
     def __init__(self):
-        self.settings = QSettings("myrdp", "settings")
         if not os.path.isdir(self.configDirectory):
             os.makedirs(self.configDirectory)
+
+    @property
+    def settings(self):
+        return QSettings("myrdp", "settings")
 
     def setValue(self, setting, value):
         return self.settings.setValue(setting, value)

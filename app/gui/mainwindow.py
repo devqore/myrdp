@@ -398,11 +398,11 @@ class MainWindow(QMainWindow):
             logger.debug("No settings to restore")
 
         # restore tray icon state
-        trayIconVisibility = self.config.getValue('trayIconVisibility').toBool()
+        trayIconVisibility = self.config.getValue('trayIconVisibility', "true").toBool()
         self.tray.setVisible(trayIconVisibility)
 
         if self.tray.isVisible():
-            mainWindowVisibility = self.config.getValue('mainWindowVisibility').toBool()
+            mainWindowVisibility = self.config.getValue('mainWindowVisibility', "true").toBool()
             self.setVisible(mainWindowVisibility)
         else:  # it tray icon is not visible, always show main window
             self.show()
