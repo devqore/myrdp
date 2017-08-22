@@ -12,19 +12,9 @@ Run from binaries
 -----------------
 
 ```bash
-wget -c https://github.com/szatanszmatan/myrdp/releases/download/2017.1/myrdp-2017.1.tar.bz2
-tar -xvf myrdp-2017.1.tar.bz2
-./myrdp-2017.1/myrdp
-```
-
-Run from sources
-----------------
-
-```bash
-git clone https://github.com/szatanszmatan/myrdp.git   
-cd myrdp   
-pip install -r requirements.txt
-python2 main.py
+wget -c https://github.com/szatanszmatan/myrdp/releases/download/2017.2/myrdp-2017.2.tar.bz2
+tar -xvf myrdp-2017.2.tar.bz2
+./myrdp-2017.2/myrdp
 ```
 
 
