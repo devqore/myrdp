@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 rm build/ -rf
 rm dist/ -rf
-pyinstaller2 myrdp.spec
-cp conf dist/myrdp -R
+. /opt/python2-venvs/myrdp/bin/activate
+pyinstaller myrdp.spec

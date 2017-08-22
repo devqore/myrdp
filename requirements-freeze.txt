@@ -1,3 +1,4 @@
+-r requirements.txt
 pyinstaller
 appdirs
 packaging
