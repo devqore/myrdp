@@ -2,6 +2,7 @@ packages:
   pkg.installed:
     {% if grains['os'] == 'Ubuntu' %}
     - names:
+      - binutils
       - python-qt4
       - python-virtualenv
       - python-dev
