@@ -14,6 +14,7 @@ from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
+from app.gui.password import PasswordDialog
 from app.gui.process import ProcessManager
 from app.gui.settingspage import SettingsPage
 from app.log import logger
@@ -61,7 +62,9 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.config = Config()
         self.db = Database(self.config.getConnectionString())
-        self.hosts = Hosts(self.db)
+
+        cryptoKey = self.getCryptoKey()
+        self.hosts = Hosts(self.db, cryptoKey)
 
         # menu used for each host
         self.hostMenu = QMenu()
@@ -139,6 +142,17 @@ class MainWindow(QMainWindow):
         # host list
         self.ui.filter.textChanged.connect(self.setHostList)
         self.setHostList()
+
+    def getCryptoKey(self, passphrase=None):
+        try:
+            return self.config.getPrivateKey(passphrase)
+        except ValueError:
+            passwordDialog = PasswordDialog()
+            retCode = passwordDialog.exec_()
+            if retCode == QtGui.QDialog.Accepted:
+                return self.getCryptoKey(passwordDialog.getPassword())
+            else:
+                raise SystemError("Password required")
 
     def showSettings(self):
         settingsWidget = self.findChild(QWidget, "settings")
@@ -299,9 +313,7 @@ class MainWindow(QMainWindow):
 
         self.hostMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
 
-    def addHost(self):
-        hostDialog = HostConfigDialog(self.hosts)
-        resp = hostDialog.add()
+    def _processHostSubmit(self, resp):
         if resp["code"]:
             self.setHostList()
         hostName = resp.get("name")
@@ -309,11 +321,14 @@ class MainWindow(QMainWindow):
             hostItem = self.findHostItemByName(hostName)
             self.slotConnectHost(hostItem)
 
+    def addHost(self):
+        hostDialog = HostConfigDialog(self.hosts)
+        self._processHostSubmit(hostDialog.add())
+
     def editHost(self):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.edit(self.getCurrentHostListItemName())
-        if resp["code"]:
-            self.setHostList()
+        self._processHostSubmit(resp)
 
     def deleteHost(self):
         for host in self.getSelectedHosts():

@@ -4,6 +4,7 @@ import os
 import sys
 
 from app.log import logger
+from app.crypto import CryptoKey
 from PyQt4.QtCore import QSettings
 J = os.path.join
 
@@ -92,3 +93,15 @@ class Config(object):
             "args": self.freerdpArgs
         }
         return "xfreerdp", data
+
+    @property
+    def privateKeyPath(self):
+        return J(self.configDirectory, 'private.key')
+
+    def getPrivateKey(self, passphrase=None):
+        ck = CryptoKey()
+        if os.path.exists(self.privateKeyPath):
+            ck.load(self.privateKeyPath, passphrase)
+        else:  # if private key doesn't exist, then save generated one
+            ck.save(self.privateKeyPath, passphrase)
+        return ck

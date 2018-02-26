@@ -29,46 +29,10 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="2">
-      <widget class="QPushButton" name="freerdp_executable_button">
+     <item row="3" column="0">
+      <widget class="QLabel" name="logging_level_label">
        <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources/resources.qrc">
-         <normaloff>:/ico/open.svg</normaloff>:/ico/open.svg</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="database_location_label">
-       <property name="text">
-        <string>Database location:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="database_location_button">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources/resources.qrc">
-         <normaloff>:/ico/open.svg</normaloff>:/ico/open.svg</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="freerdp_exec_label">
-       <property name="text">
-        <string>Freerdp executable:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="freerdp_args_label">
-       <property name="text">
-        <string>Freerdp arguments:</string>
+        <string>Logging level:</string>
        </property>
       </widget>
      </item>
@@ -82,21 +46,92 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="freerdp_executable"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="logging_level_label">
+     <item row="1" column="0">
+      <widget class="QLabel" name="freerdp_exec_label">
        <property name="text">
-        <string>Logging level:</string>
+        <string>Freerdp executable:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1" colspan="2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="database_location_label">
+       <property name="text">
+        <string>Database location:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="master_key_button">
+       <property name="maximumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources/resources.qrc">
+         <normaloff>:/ico/key.svg</normaloff>:/ico/key.svg</iconset>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3">
+      <widget class="QComboBox" name="logging_level"/>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="freerdp_executable_button">
+       <property name="maximumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources/resources.qrc">
+         <normaloff>:/ico/open.svg</normaloff>:/ico/open.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="freerdp_args_label">
+       <property name="text">
+        <string>Freerdp arguments:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="3">
       <widget class="QLineEdit" name="freerdp_arguments"/>
      </item>
-     <item row="3" column="1" colspan="2">
-      <widget class="QComboBox" name="logging_level"/>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="database_location_button">
+       <property name="maximumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources/resources.qrc">
+         <normaloff>:/ico/open.svg</normaloff>:/ico/open.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="freerdp_executable"/>
      </item>
     </layout>
    </item>

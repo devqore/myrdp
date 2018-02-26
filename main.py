@@ -22,6 +22,7 @@ def focusChanged(lostFocus, hasFocus):
     elif hasFocusType == X11Embed:
         hasFocus.grabKeyboard()
 
+
 if __name__ == "__main__":   
     app = QApplication(sys.argv)
 

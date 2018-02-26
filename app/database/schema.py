@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BLOB
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -16,5 +16,5 @@ class HostTable(Base):
     group = Column(String)
 
     def __repr__(self):
-        return "<name='%s', address='%s', user='%s', password='%s'>" \
+        return u"<name='%s', address='%s', user='%s', password='%s'>" \
                % (self.name, self.address, self.user, self.password)

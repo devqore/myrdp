@@ -24,6 +24,7 @@ class Database(object):
         """
         :param engineString: at this time only sqlite, e.g: sqlite:////some/location.sqlite,
         if None, connection string from config will be used
+        :param echo: echo SQL
         """
         if not engineString:
             engineString = Config().getConnectionString()

@@ -9,13 +9,11 @@ class HostConfigDialog(QDialog):
         self.ui = Ui_HostConfig()
         self.ui.setupUi(self)
         self.ui.showPassword.clicked.connect(self.changePasswordVisibility)
-        self.ui.showPassword.setToolTip("Show password")  # don't why not generated from ui file
         self.ui.group.lineEdit().setPlaceholderText("Group")  # not available from designer
         self.hosts = hosts
-        # label to use to show errors
-        self.errorLabel = None
 
-        self.attributes = ['name', 'address', 'user', 'password', 'group']
+        self.optionalAttributes = ['group']
+        self.attributes = ['name', 'address', 'user', 'password'] + self.optionalAttributes
 
     def changePasswordVisibility(self):
         if self.ui.showPassword.isChecked():
@@ -28,12 +26,14 @@ class HostConfigDialog(QDialog):
         :param field: object id
         :return: value or None
         """
-        field = getattr(self.ui, field)
-        if not isinstance(field, QComboBox):
-            value = field.text()
+        fieldObject = getattr(self.ui, field)
+        if not isinstance(fieldObject, QComboBox):
+            value = fieldObject.text()
         else:
-            value = field.lineEdit().text()
+            value = fieldObject.lineEdit().text()
         if value == '':
+            if field not in self.optionalAttributes:
+                raise ValueError(u"Complete the required fields")
             return None
         return unicode(value)
 
@@ -43,36 +43,29 @@ class HostConfigDialog(QDialog):
             attributesDict[attr] = self.getTextFieldValue(attr)
         return attributesDict
 
-    def acceptAddHost(self):
-        attributesDict = self.collectFieldsValues()
+    def _accept(self, action, host=None):
         try:
-            self.hosts.create(**attributesDict)
-        except Exception as e:
-            self.setErrorLabel(e.message)
-        else:
-            self.accept()
-
-    def acceptEditHost(self, host):
-        attributesDict = self.collectFieldsValues()
-        try:
-            self.hosts.updateHostValues(host, attributesDict)
+            attributesDict = self.collectFieldsValues()
+            if action == "create":
+                self.hosts.create(**attributesDict)
+            elif action == "update":
+                self.hosts.updateHostValues(host, attributesDict)
+            else:
+                raise NotImplementedError("Not supported action")
         except Exception as e:
             self.setErrorLabel(e.message)
         else:
             self.accept()
 
     def setErrorLabel(self, text):
-        if self.errorLabel is None:
-                self.errorLabel = QLabel()
-        self.errorLabel.setText(text)
-        self.ui.errorArea.addWidget(self.errorLabel)
+        self.ui.informationLabel.setText(text)
 
     def setGroups(self, field):
         field.addItem(str())  # add empty element on list begin
         for group in self.hosts.getGroupsList():
             field.addItem(group)
 
-    def add(self):
+    def _execDialog(self):
         """
         :return: dictionary {
             "code": return code,
@@ -80,25 +73,19 @@ class HostConfigDialog(QDialog):
             }
         """
         response = dict()
-        self.ui.acceptButton.clicked.connect(self.acceptAddHost)
-        self.setGroups(self.ui.group)
-
         retCode = self.exec_()
         response["code"] = retCode
-        self.ui.acceptButton.clicked.disconnect()
 
         if retCode and self.ui.connectCheckBox.isChecked():
             response["name"] = self.ui.name.text()
-
         return response
 
+    def add(self):
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
+        self.setGroups(self.ui.group)
+        return self._execDialog()
+
     def edit(self, hostName):
-        """
-        :param hostName:
-        :type hostName: app.hosts.Hosts
-        :return:
-        """
-        response = dict()
         host = self.hosts.get(hostName)
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
@@ -113,9 +100,5 @@ class HostConfigDialog(QDialog):
             else:
                 field.setText(value)
 
-        self.ui.acceptButton.clicked.connect(lambda: self.acceptEditHost(host))
-        retCode = self.exec_()
-        response["code"] = retCode
-        self.ui.acceptButton.clicked.disconnect()
-
-        return response
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("update", host))
+        return self._execDialog()
