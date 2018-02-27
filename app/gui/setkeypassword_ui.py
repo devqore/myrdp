@@ -25,9 +25,8 @@ except AttributeError:
 class Ui_SetKeyPasswordDialog(object):
     def setupUi(self, SetKeyPasswordDialog):
         SetKeyPasswordDialog.setObjectName(_fromUtf8("SetKeyPasswordDialog"))
-        SetKeyPasswordDialog.resize(394, 210)
-        SetKeyPasswordDialog.setMinimumSize(QtCore.QSize(394, 199))
-        SetKeyPasswordDialog.setMaximumSize(QtCore.QSize(394, 210))
+        SetKeyPasswordDialog.resize(353, 100)
+        SetKeyPasswordDialog.setMaximumSize(QtCore.QSize(353, 190))
         self.verticalLayout_2 = QtGui.QVBoxLayout(SetKeyPasswordDialog)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.gridLayout = QtGui.QGridLayout()
@@ -54,8 +53,6 @@ class Ui_SetKeyPasswordDialog(object):
         self.repeatPassword.setObjectName(_fromUtf8("repeatPassword"))
         self.gridLayout.addWidget(self.repeatPassword, 2, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
-        spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem)
         self.informationLabel = QtGui.QLabel(SetKeyPasswordDialog)
         self.informationLabel.setEnabled(True)
         font = QtGui.QFont()

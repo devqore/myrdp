@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_HostConfig(object):
     def setupUi(self, HostConfig):
         HostConfig.setObjectName(_fromUtf8("HostConfig"))
-        HostConfig.resize(358, 282)
+        HostConfig.resize(358, 100)
         HostConfig.setMaximumSize(QtCore.QSize(358, 282))
         self.verticalLayout = QtGui.QVBoxLayout(HostConfig)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
