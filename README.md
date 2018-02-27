@@ -12,9 +12,9 @@ Run from binaries
 -----------------
 
 ```bash
-wget -c https://github.com/szatanszmatan/myrdp/releases/download/2017.1.1/myrdp-2017.1.1.tar.bz2
-tar -xvf myrdp-2017.1.1.tar.bz2
-./myrdp-2017.1.1/myrdp
+wget -c https://github.com/szatanszmatan/myrdp/releases/download/2018.1/myrdp-2018.1.tar.bz2
+tar -xvf myrdp-2018.1.tar.bz2
+./myrdp-2018.1/myrdp
 ```
 
 
