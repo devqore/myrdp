@@ -7,4 +7,4 @@ export VERSIONED_NAME=myrdp-$VERSION
 pyinstaller myrdp.spec
 cd dist
 mv myrdp $VERSIONED_NAME
-tar -jcvf $VERSIONED_NAME.tbz2 $VERSIONED_NAME
+tar -jcvf $VERSIONED_NAME.tar.bz2 $VERSIONED_NAME

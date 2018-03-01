@@ -6,6 +6,7 @@ packages:
       - python-qt4
       - python-virtualenv
       - python-dev
+      - kde-style-breeze-qt4  # additional style
     {% elif grains['os'] == 'Arch' %}
     - names:
       - python2-pyqt4

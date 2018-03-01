@@ -6,7 +6,10 @@ block_cipher = None
 a = Analysis(['main.py'],
              pathex=['.'],
              binaries=[],
-             datas=[('app/database', 'app/database')],
+             datas=[
+                ('app/database', 'app/database'),
+                ('/usr/lib/kde4/plugins/styles', 'qt4_plugins/styles')
+             ],
              hiddenimports=['six', 'packaging', 'packaging.version', 'packaging.specifiers', 'packaging.requirements',
                             'appdirs'],
              hookspath=[],
