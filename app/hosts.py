@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from app.log import logger
+from sqlalchemy import or_
 from sqlalchemy.sql.expression import case, collate
 
 from app.database.schema import HostTable
@@ -28,6 +29,19 @@ class Hosts(object):
         hostsList = sum(self._db.session.query(HostTable.name), ())
         return sorted(hostsList)
 
+    def getHostsListByHostNameAndGroup(self, hostFilter=None, groupFilter=None):
+        result = self._db.session.query(
+            HostTable.name).order_by(
+            collate(HostTable.name, 'NOCASE')
+        ).filter(
+            or_(HostTable.group.in_(groupFilter), HostTable.group.is_(None))  # always include hosts without groups
+        )
+
+        if hostFilter:
+            result = result.filter(HostTable.name.like(u"%%{}%%".format(hostFilter)))
+
+        return sum(result, ())
+
     def getGroupsList(self):
         """
         :return: list with group names
@@ -35,15 +49,14 @@ class Hosts(object):
         return sum(self._db.session.query(HostTable.group).filter(HostTable.group.isnot(None)).distinct(), ())
 
     def getGroupedHostNames(self, queryFilter=None):
-        def q():
-            return self._db.session.query(HostTable.name, HostTable.group).order_by(
-                case([(HostTable.group == None, 1)], else_=0),  # nulls last
-                collate(HostTable.group, 'NOCASE'),
-                collate(HostTable.name, 'NOCASE'))
+        hostsList = self._db.session.query(HostTable.name, HostTable.group).order_by(
+            case([(HostTable.group == None, 1)], else_=0),  # nulls last
+            collate(HostTable.group, 'NOCASE'),
+            collate(HostTable.name, 'NOCASE')
+        )
+
         if queryFilter:
-            hostsList = q().filter(HostTable.name.like("%%%s%%" % queryFilter))
-        else:
-            hostsList = q()
+            hostsList = hostsList.filter(HostTable.name.like("%%%s%%" % queryFilter))
 
         groupedHosts = OrderedDict()
         for host, group in hostsList:

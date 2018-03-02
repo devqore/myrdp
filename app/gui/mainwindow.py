@@ -57,6 +57,7 @@ class ConnectHostMenu(QMenu):
 class MainWindow(QMainWindow):
     groups = dict()
     typeQListWidgetHeader = 1000
+    showHostsInGroups = False
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -215,13 +216,18 @@ class MainWindow(QMainWindow):
 
     def setGroupsMenu(self):
         self.groupsMenu.clear()
+
+        showHostsInGroupsAction = self.groupsMenu.addAction('Show host list in groups')
+        showHostsInGroupsAction.triggered.connect(self.changeHostListView)
+        showHostsInGroupsAction.setCheckable(True)
+        showHostsInGroupsAction.setChecked(self.showHostsInGroups)
+
+        self.groupsMenu.addSeparator()
         for group, checked in self.groups.items():
-            checkbox = QCheckBox()
-            checkbox.setText(group)
-            checkbox.setChecked(checked)
-            action = QWidgetAction(self.groupsMenu)
-            action.setDefaultWidget(checkbox)
-            checkbox.clicked.connect(self.groupsVisibilityChanged)
+            action = QAction(group, self.groupsMenu)
+            action.setCheckable(True)
+            action.setChecked(checked)
+            action.triggered.connect(self.groupsVisibilityChanged)
             self.groupsMenu.addAction(action)
 
     def groupsVisibilityChanged(self, checked):
@@ -286,6 +292,10 @@ class MainWindow(QMainWindow):
 
         menu.exec_(self.tabWidget.mapToGlobal(pos))
 
+    def changeHostListView(self, checked):
+        self.showHostsInGroups = checked
+        self.setHostList()
+
     def changeHostsDockWidgetVisibility(self):
         isVisible = self.ui.hostsDock.isVisible()
         self.ui.hostsDock.setVisible(not isVisible)
@@ -349,7 +359,19 @@ class MainWindow(QMainWindow):
         """ set hosts list in list view """
         self.ui.hostsList.clear()
         self.refreshGroups()
-        hosts = self.hosts.getGroupedHostNames(self.ui.filter.text())
+        hostFilter = self.ui.filter.text()
+        if self.showHostsInGroups:
+            self.showHostListInGroups(hostFilter)
+        else:
+            self.showHostList(hostFilter)
+
+    def showHostList(self, hostFilter):
+        groupFilter = [group for group, visiblity in self.groups.items() if visiblity]
+        hosts = self.hosts.getHostsListByHostNameAndGroup(hostFilter, groupFilter)
+        self.ui.hostsList.addItems(hosts)
+
+    def showHostListInGroups(self, hostFilter):
+        hosts = self.hosts.getGroupedHostNames(hostFilter)
         for group, hostsList in hosts.items():
             if self.groups.get(group, True):
                 if group is None:
@@ -404,6 +426,7 @@ class MainWindow(QMainWindow):
         self.config.setValue('trayIconVisibility', self.tray.isVisible())
         self.config.setValue('mainWindowVisibility', self.isVisible())
         self.config.setValue('groups', self.groups)
+        self.config.setValue('showHostsInGroups', self.showHostsInGroups)
 
     def restoreSettings(self):
         try:
@@ -415,6 +438,8 @@ class MainWindow(QMainWindow):
         # restore tray icon state
         trayIconVisibility = self.config.getValue('trayIconVisibility', "true").toBool()
         self.tray.setVisible(trayIconVisibility)
+
+        self.showHostsInGroups = self.config.getValue('showHostsInGroups', 'false').toBool()
 
         if self.tray.isVisible():
             mainWindowVisibility = self.config.getValue('mainWindowVisibility', "true").toBool()
