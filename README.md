@@ -1,22 +1,18 @@
-MyRDP - Remote desktop manager  
+MyRDP - Remote Desktop manager
 
-Prerequisites
--------------
+# Installation
+## Arch Linux
 
-xfreerdp command line tool:
-- Arch Linux: community/freerdp or aur/freerdp-git 
-- Ubuntu: freerdp-x11 
-
-
-Run from binaries
------------------
-
+Latest release is available in the aur.
 ```bash
-wget -c https://github.com/szatanszmatan/myrdp/releases/download/2018.1.1/myrdp-2018.1.1.tar.bz2
+yaourt -S myrdp
+```
+
+## Other distributions
+```bash
+wget -c https://github.com/devqore/myrdp/releases/download/2018.1.1/myrdp-2018.1.1.tar.bz2
 tar -xvf myrdp-2018.1.1.tar.bz2
 ./myrdp-2018.1.1/myrdp
 ```
 
-
-[![MyRDP movie](https://docs.google.com/uc?export=download&id=0B6f0xD4xZ3ABQ2g2dGxhdS1vcms)](https://youtu.be/2FoynZj-QFM)
-
+MyRDP requires xfreerdp command line tool (e.g. on Ubuntu: freerdp-x11).
