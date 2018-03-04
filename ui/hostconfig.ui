@@ -37,8 +37,8 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="name">
-       <property name="styleSheet">
-        <string notr="true">background-color: #fffbca;</string>
+       <property name="autoFillBackground">
+        <bool>false</bool>
        </property>
        <property name="text">
         <string/>
@@ -63,9 +63,6 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="address">
-       <property name="styleSheet">
-        <string notr="true">background-color: #fffbca;</string>
-       </property>
        <property name="placeholderText">
         <string/>
        </property>
@@ -86,9 +83,6 @@
      </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="user">
-       <property name="styleSheet">
-        <string notr="true">background-color: #fffbca;</string>
-       </property>
        <property name="placeholderText">
         <string/>
        </property>
@@ -111,9 +105,6 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLineEdit" name="password">
-         <property name="styleSheet">
-          <string notr="true">background-color: #fffbca;</string>
-         </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>
          </property>
@@ -146,7 +137,7 @@
           <string extracomment="show password"/>
          </property>
          <property name="icon">
-          <iconset resource="../resources/resources.qrc">
+          <iconset resource="../app/resources/resources.qrc">
            <normaloff>:/ico/eye.svg</normaloff>:/ico/eye.svg</iconset>
          </property>
          <property name="iconSize">
@@ -280,7 +271,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="../app/resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>
