@@ -39,7 +39,6 @@ class Ui_HostConfig(object):
         self.nameLabel.setObjectName(_fromUtf8("nameLabel"))
         self.gridLayout.addWidget(self.nameLabel, 0, 0, 1, 1)
         self.name = QtGui.QLineEdit(HostConfig)
-        self.name.setStyleSheet(_fromUtf8("background-color: #fffbca;"))
         self.name.setText(_fromUtf8(""))
         self.name.setPlaceholderText(_fromUtf8(""))
         self.name.setObjectName(_fromUtf8("name"))
