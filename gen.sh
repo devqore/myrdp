@@ -5,4 +5,4 @@ for i in `ls ui/*.ui`; do
 done
 
 echo "Generating python files for resource file"
-pyrcc4 resources/resources.qrc -o app/gui/resources_rc.py
+pyrcc4 app/resources/resources.qrc -o app/gui/resources_rc.py
