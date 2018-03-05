@@ -20,6 +20,8 @@ class Hosts(object):
 
     def get(self, hostName):
         hostTable = self._db.getObjectByName(HostTable, hostName)
+        if hostTable is None:
+            raise LookupError(u"Host not found")
         return Host(hostTable, self._crypto)
 
     def getAllHostsNames(self):
@@ -95,6 +97,9 @@ class Host(object):
 
     def __getattr__(self, item):
         return self.ctx.__dict__.get(item)
+
+    def setValue(self, key, value):
+        return self.ctx.__setattr__(key, value)
 
     @property
     def password(self):

@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
             groupToAssign = None if groupToAssign.isEmpty() else unicode(groupToAssign)
             for hostName in self.getSelectedHosts():
                 host = self.hosts.get(hostName)
-                host.group = groupToAssign
+                host.setValue("group", groupToAssign)
             self.db.tryCommit()  # todo: update should be done in hosts
             self.setHostList()
 
@@ -400,7 +400,12 @@ class MainWindow(QMainWindow):
         if frameless:
             self.tabWidget.detachFrameless(tabPage, screenIndex)
 
-        execCmd, opts = self.getCmd(tabPage, hostId)
+        try:
+            execCmd, opts = self.getCmd(tabPage, hostId)
+        except LookupError:
+            logger.error(u"Host {} not found.".format(hostId))
+            return
+
         ProcessManager.start(hostId, tabPage, execCmd, opts)
         return tabPage
 
