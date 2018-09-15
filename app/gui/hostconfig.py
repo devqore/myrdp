@@ -80,13 +80,7 @@ class HostConfigDialog(QDialog):
             response["name"] = self.ui.name.text()
         return response
 
-    def add(self):
-        self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
-        self.setGroups(self.ui.group)
-        return self._execDialog()
-
-    def edit(self, hostName):
-        host = self.hosts.get(hostName)
+    def setInputValues(self, host, generateNewName=False):
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
             value = getattr(host, attribute, '')
@@ -94,11 +88,33 @@ class HostConfigDialog(QDialog):
             if value is None:
                 value = ''
 
+            if generateNewName and attribute == "name":
+                allNames = self.hosts.getAllHostsNames()
+                suffix = 0
+                newName = value
+                while newName in allNames:
+                    newName = u"{}_{}".format(value, suffix)
+                    suffix += 1
+                value = newName
+
             if attribute == "group":
                 self.setGroups(field)
                 field.lineEdit().setText(value)
             else:
                 field.setText(value)
 
+    def add(self):
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
+        self.setGroups(self.ui.group)
+        return self._execDialog()
+
+    def edit(self, hostName):
+        host = self.hosts.get(hostName)
+        self.setInputValues(host)
         self.ui.buttonBox.accepted.connect(lambda: self._accept("update", host))
         return self._execDialog()
+
+    def duplicate(self, hostName):
+        host = self.hosts.get(hostName)
+        self.setInputValues(host, generateNewName=True)
+        return self.add()

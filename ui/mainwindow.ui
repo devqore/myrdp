@@ -17,7 +17,7 @@
    <string>MyRDP</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/resources.qrc">
+   <iconset resource="../app/resources/resources.qrc">
     <normaloff>:/ico/myrdp.svg</normaloff>:/ico/myrdp.svg</iconset>
   </property>
   <property name="autoFillBackground">
@@ -37,7 +37,7 @@
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Hosts</string>
+    <string>Hos&amp;ts</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -47,7 +47,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -85,7 +94,7 @@
           <string notr="true"/>
          </property>
          <property name="icon">
-          <iconset resource="../resources/resources.qrc">
+          <iconset resource="../app/resources/resources.qrc">
            <normaloff>:/ico/menu.svg</normaloff>:/ico/menu.svg</iconset>
          </property>
          <property name="iconSize">
@@ -145,7 +154,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../resources/resources.qrc">
+          <iconset resource="../app/resources/resources.qrc">
            <normaloff>:/ico/clear.svg</normaloff>:/ico/clear.svg</iconset>
          </property>
          <property name="flat">
@@ -179,7 +188,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="../app/resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>

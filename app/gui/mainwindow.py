@@ -73,6 +73,10 @@ class MainWindow(QMainWindow):
         self.editAction.triggered.connect(self.editHost)
         self.hostMenu.addAction(self.editAction)
 
+        self.duplicateAction = QAction(QIcon(':/ico/copy.svg'), "Duplicate", self.hostMenu)
+        self.duplicateAction.triggered.connect(self.duplicateHost)
+        self.hostMenu.addAction(self.duplicateAction)
+
         # todo: confirm for delete action
         self.deleteAction = QAction(QIcon(':/ico/remove.svg'), "Delete", self.hostMenu)
         self.deleteAction.triggered.connect(self.deleteHost)
@@ -309,6 +313,7 @@ class MainWindow(QMainWindow):
         def changeMenusVisibility(isEnabled):
             self.connectFramelessMenu.setEnabled(isEnabled)
             self.editAction.setEnabled(isEnabled)
+            self.duplicateAction.setEnabled(isEnabled)
 
         # ignore context menu for group headers
         item = self.ui.hostsList.itemAt(pos)
@@ -338,6 +343,11 @@ class MainWindow(QMainWindow):
     def editHost(self):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.edit(self.getCurrentHostListItemName())
+        self._processHostSubmit(resp)
+
+    def duplicateHost(self):
+        hostDialog = HostConfigDialog(self.hosts)
+        resp = hostDialog.duplicate(self.getCurrentHostListItemName())
         self._processHostSubmit(resp)
 
     def deleteHost(self):
