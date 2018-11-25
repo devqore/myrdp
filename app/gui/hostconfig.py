@@ -12,8 +12,8 @@ class HostConfigDialog(QDialog):
         self.ui.group.lineEdit().setPlaceholderText("Group")  # not available from designer
         self.hosts = hosts
 
-        self.optionalAttributes = ['group']
-        self.attributes = ['name', 'address', 'user', 'password'] + self.optionalAttributes
+        self.optionalAttributes = ['user', 'password', 'group']
+        self.attributes = ['name', 'address'] + self.optionalAttributes
 
     def changePasswordVisibility(self):
         if self.ui.showPassword.isChecked():

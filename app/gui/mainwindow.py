@@ -12,6 +12,7 @@ from app.hosts import Hosts
 from app.gui import actions
 from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
+from app.gui.groupmanager import GroupManager
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.password import PasswordDialog
@@ -220,6 +221,8 @@ class MainWindow(QMainWindow):
 
     def setGroupsMenu(self):
         self.groupsMenu.clear()
+        manageGroupsAction = self.groupsMenu.addAction('Manage groups')
+        manageGroupsAction.triggered.connect(self.manageGroups)
 
         showHostsInGroupsAction = self.groupsMenu.addAction('Show host list in groups')
         showHostsInGroupsAction.triggered.connect(self.changeHostListView)
@@ -233,6 +236,10 @@ class MainWindow(QMainWindow):
             action.setChecked(checked)
             action.triggered.connect(self.groupsVisibilityChanged)
             self.groupsMenu.addAction(action)
+
+    def manageGroups(self):
+        groupManager = GroupManager()
+        groupManager.exec_()
 
     def groupsVisibilityChanged(self, checked):
         currentGroup = unicode(self.sender().text())
@@ -376,7 +383,7 @@ class MainWindow(QMainWindow):
             self.showHostList(hostFilter)
 
     def showHostList(self, hostFilter):
-        groupFilter = [group for group, visiblity in self.groups.items() if visiblity]
+        groupFilter = [group for group, visibility in self.groups.items() if visibility]
         hosts = self.hosts.getHostsListByHostNameAndGroup(hostFilter, groupFilter)
         self.ui.hostsList.addItems(hosts)
 
@@ -387,7 +394,7 @@ class MainWindow(QMainWindow):
                 if group is None:
                     group = "unassigned"
                 groupHeader = QtGui.QListWidgetItem(type=self.typeQListWidgetHeader)
-                groupLabel = QtGui.QLabel(group)
+                groupLabel = QtGui.QLabel(unicode(group))
                 groupLabel.setProperty('class', 'group-title')
                 self.ui.hostsList.addItem(groupHeader)
                 self.ui.hostsList.setItemWidget(groupHeader, groupLabel)
