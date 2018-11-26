@@ -74,6 +74,13 @@ class MainWindow(QMainWindow):
         self.editAction.triggered.connect(self.editHost)
         self.hostMenu.addAction(self.editAction)
 
+        # menu used for headers of groups
+        self.groupsHeaderMenu = QMenu()
+        self.editGroupAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.groupsHeaderMenu)
+        self.editGroupAction.triggered.connect(self.editGroup)
+        self.groupsHeaderMenu.addAction(self.editGroupAction)
+
+
         self.duplicateAction = QAction(QIcon(':/ico/copy.svg'), "Duplicate", self.hostMenu)
         self.duplicateAction.triggered.connect(self.duplicateHost)
         self.hostMenu.addAction(self.duplicateAction)
@@ -214,9 +221,8 @@ class MainWindow(QMainWindow):
         if groupToAssign is not False:  # None could be used to unassign the group
             groupToAssign = None if groupToAssign.isEmpty() else unicode(groupToAssign)
             for hostName in self.getSelectedHosts():
-                host = self.hosts.get(hostName)
-                host.setValue("group", groupToAssign)
-            self.db.tryCommit()  # todo: update should be done in hosts
+                self.hosts.assignGroup(hostName, groupToAssign)
+            self.db.tryCommit()
             self.setHostList()
 
     def setGroupsMenu(self):
@@ -326,6 +332,7 @@ class MainWindow(QMainWindow):
         item = self.ui.hostsList.itemAt(pos)
 
         if self.isHostListHeader(item):
+            self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
             return
 
         if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
@@ -351,6 +358,12 @@ class MainWindow(QMainWindow):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.edit(self.getCurrentHostListItemName())
         self._processHostSubmit(resp)
+
+    def editGroup(self):
+        print "todo"
+        # hostDialog = HostConfigDialog(self.hosts)
+        # resp = hostDialog.edit(self.getCurrentHostListItemName())
+        # self._processHostSubmit(resp)
 
     def duplicateHost(self):
         hostDialog = HostConfigDialog(self.hosts)

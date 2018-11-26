@@ -58,6 +58,14 @@ class Hosts(object):
             raise LookupError(u"Host not found")
         return Host(hostProxy, self._crypto)
 
+    def assignGroup(self, hostName, groupName):
+        host = self.get(hostName)
+        if groupName:
+            group = self.groups.getOrCreate(groupName).id
+        else:  # unassign
+            group = None
+        host.assignGroup(group)
+
     def getAllHostsNames(self):
         """
         :return: list with host names
@@ -152,6 +160,9 @@ class Host(object):
     @property
     def group(self):
         return self.groupsData.name
+
+    def assignGroup(self, group):
+        self.hostData.group = group
 
     @property
     def user(self):
