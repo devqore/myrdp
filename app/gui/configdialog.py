@@ -1,26 +1,16 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtGui import QComboBox, QDialog, QLabel, QLineEdit
-from app.gui.hostconfig_ui import Ui_HostConfig
 
 
-# todo: refactor using ConfigDialog
-class HostConfigDialog(QDialog):
-    def __init__(self, hosts):
-        super(HostConfigDialog, self).__init__()
-        self.ui = Ui_HostConfig()
+class ConfigDialog(QDialog):
+    def __init__(self, configObject, ui_dialogConfig, attributes, optionalAttributes):
+        super(ConfigDialog, self).__init__()
+        self.ui = ui_dialogConfig()
         self.ui.setupUi(self)
-        self.ui.showPassword.clicked.connect(self.changePasswordVisibility)
-        self.ui.group.lineEdit().setPlaceholderText("Group")  # not available from designer
-        self.hosts = hosts
 
-        self.optionalAttributes = ['user', 'password', 'group']
-        self.attributes = ['name', 'address'] + self.optionalAttributes
-
-    def changePasswordVisibility(self):
-        if self.ui.showPassword.isChecked():
-            self.ui.password.setEchoMode(QLineEdit.Normal)
-        else:
-            self.ui.password.setEchoMode(QLineEdit.Password)
+        self.configObject = configObject
+        self.attributes = attributes
+        self.optionalAttributes = optionalAttributes
 
     def getTextFieldValue(self, field):
         """ field value or None
@@ -44,26 +34,12 @@ class HostConfigDialog(QDialog):
             attributesDict[attr] = self.getTextFieldValue(attr)
         return attributesDict
 
-    def _accept(self, action, host=None):
-        try:
-            attributesDict = self.collectFieldsValues()
-            if action == "create":
-                self.hosts.create(**attributesDict)
-            elif action == "update":
-                self.hosts.updateHostValues(host, attributesDict)
-            else:
-                raise NotImplementedError("Not supported action")
-        except Exception as e:
-            self.setErrorLabel(e.message)
-        else:
-            self.accept()
-
     def setErrorLabel(self, text):
         self.ui.informationLabel.setText(text)
 
     def setGroups(self, field):
         field.addItem(str())  # add empty element on list begin
-        for group in self.hosts.getGroupsList():
+        for group in self.configObject.getGroupsList():
             field.addItem(group)
 
     def _execDialog(self):
@@ -77,20 +53,19 @@ class HostConfigDialog(QDialog):
         retCode = self.exec_()
         response["code"] = retCode
 
-        if retCode and self.ui.connectCheckBox.isChecked():
-            response["name"] = self.ui.name.text()
         return response
 
-    def setInputValues(self, host, generateNewName=False):
+    def setInputValues(self, element, generateNewName=False):
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
-            value = getattr(host, attribute, '')
+            value = getattr(element, attribute, '')
 
             if value is None:
                 value = ''
 
+            # todo: refactor because generateNewName is in use only in hosts
             if generateNewName and attribute == "name":
-                allNames = self.hosts.getAllHostsNames()
+                allNames = self.configObject.getAllHostsNames()
                 suffix = 0
                 newName = value
                 while newName in allNames:
@@ -106,16 +81,26 @@ class HostConfigDialog(QDialog):
 
     def add(self):
         self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
-        self.setGroups(self.ui.group)
         return self._execDialog()
 
-    def edit(self, hostName):
-        host = self.hosts.get(hostName)
-        self.setInputValues(host)
-        self.ui.buttonBox.accepted.connect(lambda: self._accept("update", host))
+    def edit(self, elementName):
+        element = self.configObject.get(elementName)
+        self.setInputValues(element)
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("update", element))
         return self._execDialog()
 
-    def duplicate(self, hostName):
-        host = self.hosts.get(hostName)
-        self.setInputValues(host, generateNewName=True)
-        return self.add()
+    def _accept(self, action, element=None):
+        try:
+            attributesDict = self.collectFieldsValues()
+            if action == "create":
+                self.configObject.create(**attributesDict)
+            elif action == "update":
+                for key, value in attributesDict.iteritems():
+                    setattr(element, key, value)
+                    self.configObject._db.tryCommit()
+            else:
+                raise NotImplementedError("Not supported action")
+        except Exception as e:
+            self.setErrorLabel(e.message)
+        else:
+            self.accept()

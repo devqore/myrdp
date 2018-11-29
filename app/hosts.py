@@ -19,11 +19,14 @@ class Groups(object):
 
         return group
 
-    def create(self, name, defaultPassword=None, defaultUsername=None):
-        if defaultPassword:
-            defaultPassword = self._crypto.encrypt(defaultPassword)
+    def update(self):
+        pass  # todo
 
-        group = GroupsTable(name=name, default_password=defaultPassword, default_user_name=defaultUsername)
+    def create(self, name, default_password=None, default_user_name=None):
+        if default_password:
+            default_password = self._crypto.encrypt(default_password)
+
+        group = GroupsTable(name=name, default_password=default_password, default_user_name=default_user_name)
         self._db.createObject(group)
         return group
 

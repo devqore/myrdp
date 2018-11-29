@@ -12,7 +12,7 @@ from app.hosts import Hosts
 from app.gui import actions
 from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
-from app.gui.groupmanager import GroupManager
+from app.gui.groupconfig import GroupConfigDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.password import PasswordDialog
@@ -227,8 +227,8 @@ class MainWindow(QMainWindow):
 
     def setGroupsMenu(self):
         self.groupsMenu.clear()
-        manageGroupsAction = self.groupsMenu.addAction('Manage groups')
-        manageGroupsAction.triggered.connect(self.manageGroups)
+        addGroupAction = self.groupsMenu.addAction('Add group')
+        addGroupAction.triggered.connect(self.addGroup)
 
         showHostsInGroupsAction = self.groupsMenu.addAction('Show host list in groups')
         showHostsInGroupsAction.triggered.connect(self.changeHostListView)
@@ -243,9 +243,10 @@ class MainWindow(QMainWindow):
             action.triggered.connect(self.groupsVisibilityChanged)
             self.groupsMenu.addAction(action)
 
-    def manageGroups(self):
-        groupManager = GroupManager()
-        groupManager.exec_()
+    def addGroup(self):
+        groupConfigDialog = GroupConfigDialog(self.hosts.groups)
+        resp = groupConfigDialog.add()
+        self._processHostSubmit(resp)
 
     def groupsVisibilityChanged(self, checked):
         currentGroup = unicode(self.sender().text())
@@ -332,6 +333,8 @@ class MainWindow(QMainWindow):
         item = self.ui.hostsList.itemAt(pos)
 
         if self.isHostListHeader(item):
+            item = self.ui.hostsList.itemAt(pos)
+            self.currentGroupName = self.ui.hostsList.itemWidget(item).text()  # yea I'm so dirty
             self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
             return
 
@@ -360,10 +363,9 @@ class MainWindow(QMainWindow):
         self._processHostSubmit(resp)
 
     def editGroup(self):
-        print "todo"
-        # hostDialog = HostConfigDialog(self.hosts)
-        # resp = hostDialog.edit(self.getCurrentHostListItemName())
-        # self._processHostSubmit(resp)
+        groupConfigDialog = GroupConfigDialog(self.hosts.groups)
+        resp = groupConfigDialog.edit(self.currentGroupName)
+        self._processHostSubmit(resp)
 
     def duplicateHost(self):
         hostDialog = HostConfigDialog(self.hosts)
