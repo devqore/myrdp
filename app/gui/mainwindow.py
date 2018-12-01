@@ -20,6 +20,7 @@ from app.gui.process import ProcessManager
 from app.gui.settingspage import SettingsPage
 from app.log import logger
 
+unassignedGroupName = 'unassigned'
 
 class DockWidgetTitleBar(QWidget):
     """
@@ -334,7 +335,8 @@ class MainWindow(QMainWindow):
         if self.isHostListHeader(item):
             item = self.ui.hostsList.itemAt(pos)
             self.currentGroupName = self.ui.hostsList.itemWidget(item).text()  # yea I'm so dirty
-            self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
+            if self.currentGroupName != unassignedGroupName:
+                self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
             return
 
         if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
@@ -372,6 +374,11 @@ class MainWindow(QMainWindow):
         self._processHostSubmit(resp)
 
     def deleteHost(self):
+        retCode = self.showOkCancelMessageBox("Do you want to remove selected hosts?",
+                                              "Confirmation")
+        if retCode == QMessageBox.Cancel:
+            return
+
         for host in self.getSelectedHosts():
             self.hosts.delete(host)
         self.setHostList()
@@ -406,7 +413,7 @@ class MainWindow(QMainWindow):
         for group, hostsList in hosts.items():
             if self.groups.get(group, True):
                 if group is None:
-                    group = "unassigned"
+                    group = unassignedGroupName
                 groupHeader = QtGui.QListWidgetItem(type=self.typeQListWidgetHeader)
                 groupLabel = QtGui.QLabel(unicode(group))
                 groupLabel.setProperty('class', 'group-title')
@@ -490,11 +497,9 @@ class MainWindow(QMainWindow):
             self.saveSettings()
             QCoreApplication.exit()
             return
-               
-        msgBox = QMessageBox(self, text="Are you sure do you want to quit?")
-        msgBox.setWindowTitle("Exit confirmation")
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        ret = msgBox.exec_()
+
+        ret = self.showOkCancelMessageBox("Are you sure do you want to quit?",
+                                          "Exit confirmation")
         if ret == QMessageBox.Cancel:
             event.ignore()
             return
@@ -503,3 +508,10 @@ class MainWindow(QMainWindow):
         ProcessManager.killemall()
         event.accept()
         QCoreApplication.exit()
+
+    def showOkCancelMessageBox(self, messageBoxText, windowTitle):
+        msgBox = QMessageBox(self, text=messageBoxText)
+        msgBox.setWindowTitle(windowTitle)
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msgBox.setIcon(QMessageBox.Question)
+        return msgBox.exec_()

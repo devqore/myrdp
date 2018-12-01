@@ -113,7 +113,7 @@ class Hosts(object):
         hostsList = self._db.session.query(HostTable.name, GroupsTable.name).outerjoin(
             GroupsTable, HostTable.group == GroupsTable.id).order_by(
             case([(HostTable.group == None, 1)], else_=0),  # nulls last
-            collate(HostTable.group, 'NOCASE'),
+            collate(GroupsTable.name, 'NOCASE'),
             collate(HostTable.name, 'NOCASE')
         )
 
@@ -170,7 +170,7 @@ class Hosts(object):
                 value = self._crypto.decrypt(value)
             elif attribute == "group":
                 value = host.group
-            
+
             values[attribute] = value
         return values
 
