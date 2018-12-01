@@ -2,8 +2,8 @@
 from PyQt4 import QtGui
 
 from PyQt4.QtCore import Qt, QCoreApplication
-from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
-    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
+from PyQt4.QtGui import QAction, QMainWindow, QWidget, QMessageBox, \
+    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon
 
 from app.client import ClientFactory
 from app.config import Config
@@ -79,7 +79,6 @@ class MainWindow(QMainWindow):
         self.editGroupAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.groupsHeaderMenu)
         self.editGroupAction.triggered.connect(self.editGroup)
         self.groupsHeaderMenu.addAction(self.editGroupAction)
-
 
         self.duplicateAction = QAction(QIcon(':/ico/copy.svg'), "Duplicate", self.hostMenu)
         self.duplicateAction.triggered.connect(self.duplicateHost)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from app.gui.configdialog import ConfigDialog
-from PyQt4.QtGui import QComboBox, QDialog, QLabel, QLineEdit
+from PyQt4.QtGui import QLineEdit
 from app.gui.hostconfig_ui import Ui_HostConfig
 
 
@@ -30,7 +30,7 @@ class HostConfigDialog(ConfigDialog):
         """
         response = super(HostConfigDialog, self)._execDialog()
 
-        if response.get('retCode') and self.ui.connectCheckBox.isChecked():
+        if response.get('code') and self.ui.connectCheckBox.isChecked():
             response["name"] = self.ui.name.text()
         return response
 
@@ -40,9 +40,10 @@ class HostConfigDialog(ConfigDialog):
         return self._execDialog()
 
     def duplicate(self, hostName):
-        host = self.hosts.get(hostName)
-        self.setInputValues(host, generateNewName=True)
-        return self.add()
+        values = self.configObject.getFormattedValues(hostName, self.attributes)
+        self.setInputValues(values, generateNewName=True)
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
+        return self._execDialog()
 
     def setGroups(self, field):
         field.addItem(str())  # add empty element on list begin
