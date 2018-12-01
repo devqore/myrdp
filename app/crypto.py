@@ -46,6 +46,8 @@ class CryptoKey(object):
 
     def decrypt(self, encryptedMessage):
         cipher = PKCS1_OAEP.new(self.key)
+        if encryptedMessage is None:
+            return None
         decryptedMessage = cipher.decrypt(base64.b64decode(encryptedMessage))
         return decryptedMessage.decode('utf8')
 

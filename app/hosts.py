@@ -19,9 +19,6 @@ class Groups(object):
 
         return group
 
-    def update(self):
-        pass  # todo
-
     def create(self, name, default_password=None, default_user_name=None):
         if default_password:
             default_password = self._crypto.encrypt(default_password)
@@ -37,6 +34,23 @@ class Groups(object):
             group = self.create(groupName)
 
         return group
+
+    def updateValues(self, groupName, values):
+        passwd = values.get('default_password')
+        if passwd:
+            values["default_password"] = self._crypto.encrypt(passwd)
+        group = self.get(groupName)
+        self._db.updateObject(group, values)
+
+    def getFormattedValues(self, groupName, attributes):
+        group = self.get(groupName)
+        values = dict()
+        for attribute in attributes:
+            value = getattr(group, attribute)
+            if attribute == "default_password":
+                value = self._crypto.decrypt(value)
+            values[attribute] = value
+        return values
 
 
 class Hosts(object):
@@ -114,11 +128,12 @@ class Hosts(object):
                 groupedHosts[group] = [host]
         return groupedHosts
 
-    def updateHostValues(self, host, values):
+    def updateValues(self, hostName, values):
         """
-        :param host: host object
+        :param hostName: host name
         :param values: Dictionary {attribute: value}
         """
+        host = self.get(hostName)
         passwd = values.get('password')
         if passwd:
             values["password"] = self._crypto.encrypt(passwd)
@@ -145,6 +160,19 @@ class Hosts(object):
     def delete(self, hostName):
         host = self.get(hostName=hostName)
         self._db.deleteObject(host)
+
+    def getFormattedValues(self, hostName, attributes):
+        host = self.get(hostName)
+        values = dict()
+        for attribute in attributes:
+            value = getattr(host.hostData, attribute)
+            if attribute == "password" and value:
+                value = self._crypto.decrypt(value)
+            elif attribute == "group":
+                value = host.group
+            
+            values[attribute] = value
+        return values
 
 
 class Host(object):

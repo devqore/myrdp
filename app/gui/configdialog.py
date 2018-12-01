@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtGui import QComboBox, QDialog, QLabel, QLineEdit
+from PyQt4.QtGui import QComboBox, QDialog
 
 
 class ConfigDialog(QDialog):
@@ -37,11 +37,6 @@ class ConfigDialog(QDialog):
     def setErrorLabel(self, text):
         self.ui.informationLabel.setText(text)
 
-    def setGroups(self, field):
-        field.addItem(str())  # add empty element on list begin
-        for group in self.configObject.getGroupsList():
-            field.addItem(group)
-
     def _execDialog(self):
         """
         :return: dictionary {
@@ -55,49 +50,33 @@ class ConfigDialog(QDialog):
 
         return response
 
-    def setInputValues(self, element, generateNewName=False):
+    def setInputValues(self, values):
         for attribute in self.attributes:
             field = getattr(self.ui, attribute)
-            value = getattr(element, attribute, '')
+            value = values.get(attribute)
 
             if value is None:
                 value = ''
 
-            # todo: refactor because generateNewName is in use only in hosts
-            if generateNewName and attribute == "name":
-                allNames = self.configObject.getAllHostsNames()
-                suffix = 0
-                newName = value
-                while newName in allNames:
-                    newName = u"{}_{}".format(value, suffix)
-                    suffix += 1
-                value = newName
-
-            if attribute == "group":
-                self.setGroups(field)
-                field.lineEdit().setText(value)
-            else:
-                field.setText(value)
+            field.setText(value)
 
     def add(self):
         self.ui.buttonBox.accepted.connect(lambda: self._accept("create"))
         return self._execDialog()
 
     def edit(self, elementName):
-        element = self.configObject.get(elementName)
-        self.setInputValues(element)
-        self.ui.buttonBox.accepted.connect(lambda: self._accept("update", element))
+        values = self.configObject.getFormattedValues(elementName, self.attributes)
+        self.setInputValues(values)
+        self.ui.buttonBox.accepted.connect(lambda: self._accept("update", elementName))
         return self._execDialog()
 
-    def _accept(self, action, element=None):
+    def _accept(self, action, elementName=None):
         try:
             attributesDict = self.collectFieldsValues()
             if action == "create":
                 self.configObject.create(**attributesDict)
             elif action == "update":
-                for key, value in attributesDict.iteritems():
-                    setattr(element, key, value)
-                    self.configObject._db.tryCommit()
+                self.configObject.updateValues(elementName, attributesDict)
             else:
                 raise NotImplementedError("Not supported action")
         except Exception as e:

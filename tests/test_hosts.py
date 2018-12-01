@@ -24,13 +24,13 @@ class HostsTestCase(BaseTestCase):
     def test_updatePassword(self):
         self.hosts.create("host", "address", None, None)
         host = self.hosts.get("host")
-        self.hosts.updateHostValues(host, {"password": "abc"})
+        self.hosts.updateValues("host", {"password": "abc"})
         self.assertEqual(host.password, "abc")
 
-        self.hosts.updateHostValues(host, {"password": "def"})
+        self.hosts.updateValues("host", {"password": "def"})
         host = self.hosts.get("host")
         self.assertEqual(host.password, "def")
 
-        self.hosts.updateHostValues(host, {"password": None})
+        self.hosts.updateValues("host", {"password": None})
         host = self.hosts.get("host")
         self.assertIsNone(host.password)
