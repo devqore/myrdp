@@ -2,8 +2,8 @@
 from PyQt4 import QtGui
 
 from PyQt4.QtCore import Qt, QCoreApplication
-from PyQt4.QtGui import QAction, QCheckBox, QMainWindow, QWidget, QMessageBox, \
-    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QWidgetAction
+from PyQt4.QtGui import QAction, QMainWindow, QWidget, QMessageBox, \
+    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QDialog
 
 from app.client import ClientFactory
 from app.config import Config
@@ -12,12 +12,15 @@ from app.hosts import Hosts
 from app.gui import actions
 from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
+from app.gui.groupconfig import GroupConfigDialog, DeleteGroupDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.password import PasswordDialog
 from app.gui.process import ProcessManager
 from app.gui.settingspage import SettingsPage
 from app.log import logger
+
+unassignedGroupName = 'unassigned'
 
 
 class DockWidgetTitleBar(QWidget):
@@ -58,6 +61,7 @@ class MainWindow(QMainWindow):
     groups = dict()
     typeQListWidgetHeader = 1000
     showHostsInGroups = False
+    currentGroupName = None  # used to simple detect currently selected group to show menu
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -72,6 +76,15 @@ class MainWindow(QMainWindow):
         self.editAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.hostMenu)
         self.editAction.triggered.connect(self.editHost)
         self.hostMenu.addAction(self.editAction)
+
+        # menu used for headers of groups
+        self.groupsHeaderMenu = QMenu()
+        self.editGroupAction = QAction(QIcon(':/ico/edit.svg'), "Edit group", self.groupsHeaderMenu)
+        self.editGroupAction.triggered.connect(self.editGroup)
+        self.deleteGroupAction = QAction(QIcon(':/ico/remove.svg'), "Delete group", self.groupsHeaderMenu)
+        self.deleteGroupAction.triggered.connect(self.deleteGroup)
+        self.groupsHeaderMenu.addAction(self.editGroupAction)
+        self.groupsHeaderMenu.addAction(self.deleteGroupAction)
 
         self.duplicateAction = QAction(QIcon(':/ico/copy.svg'), "Duplicate", self.hostMenu)
         self.duplicateAction.triggered.connect(self.duplicateHost)
@@ -213,13 +226,17 @@ class MainWindow(QMainWindow):
         if groupToAssign is not False:  # None could be used to unassign the group
             groupToAssign = None if groupToAssign.isEmpty() else unicode(groupToAssign)
             for hostName in self.getSelectedHosts():
-                host = self.hosts.get(hostName)
-                host.setValue("group", groupToAssign)
-            self.db.tryCommit()  # todo: update should be done in hosts
+                self.hosts.assignGroup(hostName, groupToAssign)
+            self.db.tryCommit()
             self.setHostList()
 
     def setGroupsMenu(self):
         self.groupsMenu.clear()
+        addGroupAction = self.groupsMenu.addAction('Add group')
+        addGroupAction.triggered.connect(self.addGroup)
+
+        deleteGroupAction = self.groupsMenu.addAction('Delete group')
+        deleteGroupAction.triggered.connect(self.showDeleteGroupDialog)
 
         showHostsInGroupsAction = self.groupsMenu.addAction('Show host list in groups')
         showHostsInGroupsAction.triggered.connect(self.changeHostListView)
@@ -233,6 +250,11 @@ class MainWindow(QMainWindow):
             action.setChecked(checked)
             action.triggered.connect(self.groupsVisibilityChanged)
             self.groupsMenu.addAction(action)
+
+    def addGroup(self):
+        groupConfigDialog = GroupConfigDialog(self.hosts.groups)
+        resp = groupConfigDialog.add()
+        self._processHostSubmit(resp)
 
     def groupsVisibilityChanged(self, checked):
         currentGroup = unicode(self.sender().text())
@@ -319,6 +341,12 @@ class MainWindow(QMainWindow):
         item = self.ui.hostsList.itemAt(pos)
 
         if self.isHostListHeader(item):
+            item = self.ui.hostsList.itemAt(pos)
+            widgetItem = self.ui.hostsList.itemWidget(item)
+            if widgetItem:
+                self.currentGroupName = widgetItem.text()  # yea I'm so dirty
+                if self.currentGroupName != unassignedGroupName:
+                    self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
             return
 
         if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
@@ -345,12 +373,37 @@ class MainWindow(QMainWindow):
         resp = hostDialog.edit(self.getCurrentHostListItemName())
         self._processHostSubmit(resp)
 
+    def editGroup(self):
+        groupConfigDialog = GroupConfigDialog(self.hosts.groups)
+        resp = groupConfigDialog.edit(self.currentGroupName)
+        self._processHostSubmit(resp)
+
+    def deleteGroup(self):
+        retCode = self.showOkCancelMessageBox("Do you want to remove selected group? All assigned hosts "
+                                              "to this group will be unassigned.",
+                                              "Confirmation")
+        if retCode == QMessageBox.Cancel:
+            return
+
+        self.hosts.deleteGroup(self.currentGroupName)
+        self.setHostList()
+
+    def showDeleteGroupDialog(self):
+        deleteGroupDialog = DeleteGroupDialog(self.hosts)
+        deleteGroupDialog.deleteGroup()
+        self.setHostList()
+
     def duplicateHost(self):
         hostDialog = HostConfigDialog(self.hosts)
         resp = hostDialog.duplicate(self.getCurrentHostListItemName())
         self._processHostSubmit(resp)
 
     def deleteHost(self):
+        retCode = self.showOkCancelMessageBox("Do you want to remove selected hosts?",
+                                              "Confirmation")
+        if retCode == QMessageBox.Cancel:
+            return
+
         for host in self.getSelectedHosts():
             self.hosts.delete(host)
         self.setHostList()
@@ -376,7 +429,7 @@ class MainWindow(QMainWindow):
             self.showHostList(hostFilter)
 
     def showHostList(self, hostFilter):
-        groupFilter = [group for group, visiblity in self.groups.items() if visiblity]
+        groupFilter = [group for group, visibility in self.groups.items() if visibility]
         hosts = self.hosts.getHostsListByHostNameAndGroup(hostFilter, groupFilter)
         self.ui.hostsList.addItems(hosts)
 
@@ -385,9 +438,9 @@ class MainWindow(QMainWindow):
         for group, hostsList in hosts.items():
             if self.groups.get(group, True):
                 if group is None:
-                    group = "unassigned"
+                    group = unassignedGroupName
                 groupHeader = QtGui.QListWidgetItem(type=self.typeQListWidgetHeader)
-                groupLabel = QtGui.QLabel(group)
+                groupLabel = QtGui.QLabel(unicode(group))
                 groupLabel.setProperty('class', 'group-title')
                 self.ui.hostsList.addItem(groupHeader)
                 self.ui.hostsList.setItemWidget(groupHeader, groupLabel)
@@ -469,16 +522,21 @@ class MainWindow(QMainWindow):
             self.saveSettings()
             QCoreApplication.exit()
             return
-               
-        msgBox = QMessageBox(self, text="Are you sure do you want to quit?")
-        msgBox.setWindowTitle("Exit confirmation")
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        ret = msgBox.exec_()
+
+        ret = self.showOkCancelMessageBox("Are you sure do you want to quit?",
+                                          "Exit confirmation")
         if ret == QMessageBox.Cancel:
             event.ignore()
             return
-        
+
         self.saveSettings()
         ProcessManager.killemall()
         event.accept()
         QCoreApplication.exit()
+
+    def showOkCancelMessageBox(self, messageBoxText, windowTitle):
+        msgBox = QMessageBox(self, text=messageBoxText)
+        msgBox.setWindowTitle(windowTitle)
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msgBox.setIcon(QMessageBox.Question)
+        return msgBox.exec_()

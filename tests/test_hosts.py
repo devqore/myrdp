@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
-from unittest import TestCase
-from app.crypto import CryptoKey
-from app.database import Database
-from app.hosts import Hosts
+from tests import BaseTestCase
 
 
-class HostsTestCase(TestCase):
-    def setUp(self):
-        self.db = Database('sqlite://')  # in memory database
-        self.db.create()
-        self.ck = CryptoKey()
-        self.hosts = Hosts(self.db, self.ck)
-
-    def tearDown(self):
-        self.db.drop()
+class HostsTestCase(BaseTestCase):
 
     def test_password(self):
         self.hosts.create("first host", "address", "user", "password")
@@ -33,15 +22,15 @@ class HostsTestCase(TestCase):
         self.assertIsNone(host.password)
 
     def test_updatePassword(self):
-        host = self.hosts.create("host", "address", None, None)
-        self.hosts.updateHostValues(host, {"password": "abc"})
+        self.hosts.create("host", "address", None, None)
         host = self.hosts.get("host")
+        self.hosts.updateValues("host", {"password": "abc"})
         self.assertEqual(host.password, "abc")
 
-        self.hosts.updateHostValues(host, {"password": "def"})
+        self.hosts.updateValues("host", {"password": "def"})
         host = self.hosts.get("host")
         self.assertEqual(host.password, "def")
 
-        self.hosts.updateHostValues(host, {"password": None})
+        self.hosts.updateValues("host", {"password": None})
         host = self.hosts.get("host")
         self.assertIsNone(host.password)
