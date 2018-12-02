@@ -3,7 +3,7 @@ from PyQt4 import QtGui
 
 from PyQt4.QtCore import Qt, QCoreApplication
 from PyQt4.QtGui import QAction, QMainWindow, QWidget, QMessageBox, \
-    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon
+    QMenu, QIcon, QVBoxLayout, QSystemTrayIcon, QDialog
 
 from app.client import ClientFactory
 from app.config import Config
@@ -12,7 +12,7 @@ from app.hosts import Hosts
 from app.gui import actions
 from app.gui.assigngroup import AssignGroupDialog
 from app.gui.hostconfig import HostConfigDialog
-from app.gui.groupconfig import GroupConfigDialog
+from app.gui.groupconfig import GroupConfigDialog, DeleteGroupDialog
 from app.gui.mainwindow_ui import Ui_MainWindow
 from app.gui.mytabwidget import MyTabWidget
 from app.gui.password import PasswordDialog
@@ -21,6 +21,7 @@ from app.gui.settingspage import SettingsPage
 from app.log import logger
 
 unassignedGroupName = 'unassigned'
+
 
 class DockWidgetTitleBar(QWidget):
     """
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
     groups = dict()
     typeQListWidgetHeader = 1000
     showHostsInGroups = False
+    currentGroupName = None  # used to simple detect currently selected group to show menu
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -77,9 +79,12 @@ class MainWindow(QMainWindow):
 
         # menu used for headers of groups
         self.groupsHeaderMenu = QMenu()
-        self.editGroupAction = QAction(QIcon(':/ico/edit.svg'), "Edit", self.groupsHeaderMenu)
+        self.editGroupAction = QAction(QIcon(':/ico/edit.svg'), "Edit group", self.groupsHeaderMenu)
         self.editGroupAction.triggered.connect(self.editGroup)
+        self.deleteGroupAction = QAction(QIcon(':/ico/remove.svg'), "Delete group", self.groupsHeaderMenu)
+        self.deleteGroupAction.triggered.connect(self.deleteGroup)
         self.groupsHeaderMenu.addAction(self.editGroupAction)
+        self.groupsHeaderMenu.addAction(self.deleteGroupAction)
 
         self.duplicateAction = QAction(QIcon(':/ico/copy.svg'), "Duplicate", self.hostMenu)
         self.duplicateAction.triggered.connect(self.duplicateHost)
@@ -230,6 +235,9 @@ class MainWindow(QMainWindow):
         addGroupAction = self.groupsMenu.addAction('Add group')
         addGroupAction.triggered.connect(self.addGroup)
 
+        deleteGroupAction = self.groupsMenu.addAction('Delete group')
+        deleteGroupAction.triggered.connect(self.showDeleteGroupDialog)
+
         showHostsInGroupsAction = self.groupsMenu.addAction('Show host list in groups')
         showHostsInGroupsAction.triggered.connect(self.changeHostListView)
         showHostsInGroupsAction.setCheckable(True)
@@ -334,9 +342,11 @@ class MainWindow(QMainWindow):
 
         if self.isHostListHeader(item):
             item = self.ui.hostsList.itemAt(pos)
-            self.currentGroupName = self.ui.hostsList.itemWidget(item).text()  # yea I'm so dirty
-            if self.currentGroupName != unassignedGroupName:
-                self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
+            widgetItem = self.ui.hostsList.itemWidget(item)
+            if widgetItem:
+                self.currentGroupName = widgetItem.text()  # yea I'm so dirty
+                if self.currentGroupName != unassignedGroupName:
+                    self.groupsHeaderMenu.exec_(self.ui.hostsList.mapToGlobal(pos))
             return
 
         if len(self.ui.hostsList.selectedItems()) == 1:  # single menu
@@ -367,6 +377,21 @@ class MainWindow(QMainWindow):
         groupConfigDialog = GroupConfigDialog(self.hosts.groups)
         resp = groupConfigDialog.edit(self.currentGroupName)
         self._processHostSubmit(resp)
+
+    def deleteGroup(self):
+        retCode = self.showOkCancelMessageBox("Do you want to remove selected group? All assigned hosts "
+                                              "to this group will be unassigned.",
+                                              "Confirmation")
+        if retCode == QMessageBox.Cancel:
+            return
+
+        self.hosts.deleteGroup(self.currentGroupName)
+        self.setHostList()
+
+    def showDeleteGroupDialog(self):
+        deleteGroupDialog = DeleteGroupDialog(self.hosts)
+        deleteGroupDialog.deleteGroup()
+        self.setHostList()
 
     def duplicateHost(self):
         hostDialog = HostConfigDialog(self.hosts)
@@ -503,7 +528,7 @@ class MainWindow(QMainWindow):
         if ret == QMessageBox.Cancel:
             event.ignore()
             return
-        
+
         self.saveSettings()
         ProcessManager.killemall()
         event.accept()

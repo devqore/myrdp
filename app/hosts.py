@@ -161,6 +161,11 @@ class Hosts(object):
         host = self.get(hostName=hostName)
         self._db.deleteObject(host)
 
+    def deleteGroup(self, groupName):
+        group = self.groups.get(groupName)
+        self._db.session.query(HostTable).filter(HostTable.group == group.id).update({HostTable.group: None})
+        self._db.deleteObject(group)
+
     def getFormattedValues(self, hostName, attributes):
         host = self.get(hostName)
         values = dict()
