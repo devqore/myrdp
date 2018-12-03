@@ -9,7 +9,6 @@ Create Date: 2018-09-15 22:02:31.199186
 from alembic import op
 import sqlalchemy as sa
 
-from app.database.updates.versions.cfd366892018_encrypt_passwords import hostsHelper
 from app.log import logger
 
 
@@ -18,6 +17,19 @@ revision = 'a7debeaf9b0c'
 down_revision = 'cfd366892018'
 branch_labels = None
 depends_on = None
+
+# from app.database.updates.versions.cfd366892018_encrypt_passwords import hostsHelper
+# not imported because there was some problems after freeze, so is just copied :/ yea dirty
+hostsHelper = sa.Table(
+    'hosts',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer, primary_key=True),
+    sa.Column('address', sa.String, nullable=False),
+    sa.Column('name', sa.String),
+    sa.Column('user', sa.String),
+    sa.Column('password', sa.String),
+    sa.Column('group', sa.String)
+)
 
 
 def upgrade():
