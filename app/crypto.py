@@ -60,5 +60,5 @@ class CryptoKey(object):
         keyContent = self.export(passphrase)
         with open(filePath, 'wb') as f:
             f.write(keyContent)
-            os.chmod(filePath, 0600)
+            os.chmod(filePath, 0o600)
         return keyContent

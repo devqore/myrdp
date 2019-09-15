@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/mainwindow.ui'
 #
-# Created by: PyQt4 UI code generator 4.12.1
+# Created by: PyQt4 UI code generator 4.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -99,9 +99,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MyRDP", None))
-        self.hostsDock.setWindowTitle(_translate("MainWindow", "Hosts", None))
+        self.hostsDock.setWindowTitle(_translate("MainWindow", "Hos&ts", None))
         self.menu.setToolTip(_translate("MainWindow", "Menu", None))
         self.menu.setShortcut(_translate("MainWindow", "Ctrl+R", None))
         self.filter.setPlaceholderText(_translate("MainWindow", "Filter", None))
 
-import resources_rc
+from . import resources_rc

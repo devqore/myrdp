@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/groupconfig.ui'
 #
-# Created by: PyQt4 UI code generator 4.12.1
+# Created by: PyQt4 UI code generator 4.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -124,4 +124,4 @@ class Ui_GroupConfig(object):
         self.passwordLabel.setText(_translate("GroupConfig", "Default password:", None))
         self.userLabel.setText(_translate("GroupConfig", "Default user:", None))
 
-import resources_rc
+from . import resources_rc

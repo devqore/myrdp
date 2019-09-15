@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/hostconfig.ui'
 #
-# Created by: PyQt4 UI code generator 4.12.1
+# Created by: PyQt4 UI code generator 4.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -153,4 +153,4 @@ class Ui_HostConfig(object):
         self.groupLabel.setText(_translate("HostConfig", "Group:", None))
         self.connectCheckBox.setText(_translate("HostConfig", "connect", None))
 
-import resources_rc
+from . import resources_rc

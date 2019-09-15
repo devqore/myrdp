@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/settings.ui'
 #
-# Created by: PyQt4 UI code generator 4.12.1
+# Created by: PyQt4 UI code generator 4.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -123,4 +123,4 @@ class Ui_SettingsPage(object):
         self.information_label.setText(_translate("SettingsPage", "To apply database changes restart application", None))
         self.save_button.setText(_translate("SettingsPage", "Save", None))
 
-import resources_rc
+from . import resources_rc
