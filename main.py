@@ -29,7 +29,7 @@ if __name__ == "__main__":
     styleFile = QFile(":/style/style.qss")
     styleFile.open(QFile.ReadOnly)
     data = styleFile.readAll()
-    app.setStyleSheet(unicode(data))
+    app.setStyleSheet(str(data))
 
     # show icons in menus
     app.setAttribute(Qt.AA_DontShowIconsInMenus, False)

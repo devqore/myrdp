@@ -24,7 +24,7 @@ class SetKeyPassword(QDialog):
 
     @staticmethod
     def isFieldEmpty(field):
-        if field == QtCore.QString(u''):
+        if field == QtCore.QString(''):
             return True
         return False
 
@@ -35,13 +35,13 @@ class SetKeyPassword(QDialog):
 
         if self.isFieldEmpty(currentPassword) and self.isFieldEmpty(newPassword) and \
                 self.isFieldEmpty(repeatNewPassword):
-            raise ValueError(u"No master password changes detected")
+            raise ValueError("No master password changes detected")
 
         if newPassword != repeatNewPassword:
-            raise ValueError(u"Passwords mismatch")
+            raise ValueError("Passwords mismatch")
 
         config = Config()
 
-        ck = config.getPrivateKey(unicode(currentPassword))
-        ck.save(config.privateKeyPath, unicode(newPassword))
-        logger.debug(u"Key exported")
+        ck = config.getPrivateKey(str(currentPassword))
+        ck.save(config.privateKeyPath, str(newPassword))
+        logger.debug("Key exported")

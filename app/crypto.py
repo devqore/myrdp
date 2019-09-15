@@ -20,8 +20,6 @@ class CryptoKey(object):
     def getProcessedPassphrase(passphrase):
         if passphrase == '':
             return None
-        elif isinstance(passphrase, unicode):
-            return passphrase.encode('utf8')
         return passphrase
 
     def export(self, passphrase=None):
@@ -33,13 +31,10 @@ class CryptoKey(object):
         try:
             self.key = RSA.importKey(key, passphrase)
         except ValueError:
-            raise ValueError(u"Wrong current password")
+            raise ValueError("Wrong current password")
         return self.key
 
     def encrypt(self, message):
-        if isinstance(message, unicode):
-            message = message.encode('utf8')
-
         cipher = PKCS1_OAEP.new(self.key)
         encryptedMessage = cipher.encrypt(message)
         return base64.b64encode(encryptedMessage)
@@ -49,7 +44,7 @@ class CryptoKey(object):
         if encryptedMessage is None:
             return None
         decryptedMessage = cipher.decrypt(base64.b64decode(encryptedMessage))
-        return decryptedMessage.decode('utf8')
+        return decryptedMessage
 
     def load(self, filePath, passphrase=None):
         with open(filePath, 'rb') as f:

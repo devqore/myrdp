@@ -15,7 +15,7 @@ class Groups(object):
     def get(self, name):
         group = self._db.getObjectByName(GroupsTable, name)
         if group is None:
-            raise LookupError(u"Host not found")
+            raise LookupError("Host not found")
 
         return group
 
@@ -67,12 +67,12 @@ class Hosts(object):
 
     def get(self, hostName):
         hostProxy = self._db.session.query(HostTable, GroupsTable).filter_by(
-            name=unicode(hostName)).outerjoin(
+            name=str(hostName)).outerjoin(
             GroupsTable, HostTable.group == GroupsTable.id
         ).first()
 
         if hostProxy is None:
-            raise LookupError(u"Host not found")
+            raise LookupError("Host not found")
         return Host(hostProxy, self._crypto)
 
     def assignGroup(self, hostName, groupName):
@@ -99,7 +99,7 @@ class Hosts(object):
         )
 
         if hostFilter:
-            result = result.filter(HostTable.name.like(u"%%{}%%".format(hostFilter)))
+            result = result.filter(HostTable.name.like("%%{}%%".format(hostFilter)))
 
         return sum(result, ())
 
@@ -216,7 +216,7 @@ class Host(object):
             try:
                 return self._crypto.decrypt(password)
             except ValueError as e:
-                logger.error(u"Couldn't decrypt password. {}".format(e.message))
+                logger.error("Couldn't decrypt password. {}".format(e.message))
             except TypeError as e:
-                logger.error(u"Couldn't decode base64 password. {}".format(e.message))
+                logger.error("Couldn't decode base64 password. {}".format(e.message))
         return None

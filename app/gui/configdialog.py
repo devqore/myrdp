@@ -24,9 +24,9 @@ class ConfigDialog(QDialog):
             value = fieldObject.lineEdit().text()
         if value == '':
             if field not in self.optionalAttributes:
-                raise ValueError(u"Complete the required fields")
+                raise ValueError("Complete the required fields")
             return None
-        return unicode(value)
+        return str(value)
 
     def collectFieldsValues(self):
         attributesDict = {}

@@ -17,7 +17,7 @@ class HostTable(Base):
     group = Column(Integer, ForeignKey('groups.id'), nullable=True)
 
     def __repr__(self):
-        return u"<name='%s', address='%s', user='%s', password='%s'>" \
+        return "<name='%s', address='%s', user='%s', password='%s'>" \
                % (self.name, self.address, self.user, self.password)
 
 
@@ -30,5 +30,5 @@ class GroupsTable(Base):
     default_password = Column(String)
 
     def __repr__(self):
-        return u"<id='%s', name='%s', default_user_name='%s', default_password='%s'>" \
+        return "<id='%s', name='%s', default_user_name='%s', default_password='%s'>" \
                % (self.id, self.name, self.default_user_name, self.default_password)

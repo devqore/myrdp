@@ -33,7 +33,7 @@ hostsHelper = sa.Table(
 
 
 def upgrade():
-    logger.info(u"Doing groups manager upgrade.")
+    logger.info("Doing groups manager upgrade.")
     groupsTable = op.create_table(
         'groups',
         sa.Column('id', sa.Integer, primary_key=True),

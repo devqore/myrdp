@@ -317,7 +317,7 @@ class MyTabWidget(QtGui.QTabWidget):
         self.setDetached(True, widget, screenIndex)
 
     def getTabObjectName(self, tabName):
-        return u"p_%s" % tabName
+        return "p_%s" % tabName
 
     def createTab(self, tabName):
         # used for create unique object name (because title is unique)

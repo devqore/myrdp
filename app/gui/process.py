@@ -16,16 +16,16 @@ class ProcessManager(object):
         try:
             processName = process.name
             self.processes.pop(processName)
-            logger.debug(u"Removed process %s" % processName)
+            logger.debug("Removed process %s" % processName)
         except KeyError:
-            logger.warning(u"Trying to remove not existing process..")
+            logger.warning("Trying to remove not existing process..")
 
     def killemall(self):
         for process in self.processes.values():
             try:
                 process.tabPage.close()
             except Exception as e:
-                logger.warning(u"Exception when trying to kill process..\n%s" % e)
+                logger.warning("Exception when trying to kill process..\n%s" % e)
 
     @property
     def hasActiveProcess(self):
@@ -36,7 +36,7 @@ class ProcessManager(object):
     def start(self, name, tabPage, *args, **kwargs):
         process = TabPageProcess(name, tabPage)
         self.add(process)
-        process.tabPage.appendText(u"Connecting to %s.." % name)
+        process.tabPage.appendText("Connecting to %s.." % name)
         process.start(*args, **kwargs)
         return process
 
@@ -46,7 +46,7 @@ ProcessManager = ProcessManager()
 class TabPageProcess(QtCore.QProcess):
     def __init__(self, name, tabPage, *args, **kwargs):
         super(TabPageProcess, self).__init__(*args, **kwargs)
-        self.name = unicode(name)
+        self.name = str(name)
         self.tabPage = tabPage
 
         self.setProcessChannelMode(QtCore.QProcess.MergedChannels)
