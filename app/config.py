@@ -28,7 +28,13 @@ class Config(object):
         return self.settings.value(setting, defaultValue)
 
     def getStringValue(self, setting, defaultValue=None):
-        return self.getValue(setting, defaultValue).toString()
+        return str(self.getValue(setting, defaultValue))
+
+    def getBooleanValue(self, setting, defaultValue):
+        value = self.settings.value(setting, defaultValue)
+        if isinstance(value, bool):
+            return value
+        return value.lower() in ("yes", "true", "1")
 
     @property
     def mainDirectory(self):
@@ -41,7 +47,7 @@ class Config(object):
 
     @property
     def configDirectory(self):
-        return os.path.dirname(unicode(self.settings.fileName()))
+        return os.path.dirname(str(self.settings.fileName()))
 
     @property
     def databaseLocation(self):
@@ -55,7 +61,7 @@ class Config(object):
         self.setValue('database_location', location)
 
     def getConnectionString(self):
-        connectionString = u"sqlite:///%s" % self.databaseLocation
+        connectionString = "sqlite:///%s" % self.databaseLocation
         logging.debug(connectionString)
         return connectionString
 
@@ -76,7 +82,7 @@ class Config(object):
 
     @property
     def logLevel(self):
-        return unicode(self.getStringValue('logging_level', "error"))
+        return str(self.getStringValue('logging_level', "error"))
 
     def setLogLevel(self, loggingLevel=None):
         if loggingLevel:

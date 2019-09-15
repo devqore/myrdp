@@ -57,7 +57,7 @@ class Database(object):
         :param objectName:
         :return:
         """
-        obj = self.session.query(schemaType).filter_by(name=unicode(objectName)).first()
+        obj = self.session.query(schemaType).filter_by(name=str(objectName)).first()
         return obj
 
     def tryCommit(self):

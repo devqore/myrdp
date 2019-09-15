@@ -183,10 +183,10 @@ class MainWindow(QMainWindow):
         self.tabWidget.setCurrentIndex(index)
 
     def connectHostFromMenu(self, action):
-        self.connectHost(unicode(action.text()))
+        self.connectHost(str(action.text()))
 
     def connectHostFromTrayMenu(self, action):
-        tabPage = self.connectHost(unicode(action.text()))
+        tabPage = self.connectHost(str(action.text()))
         if not self.isVisible():
             self.tabWidget.setDetached(True, tabPage)
 
@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         assignGroupDialog = AssignGroupDialog(groups)
         groupToAssign = assignGroupDialog.assign()
         if groupToAssign is not False:  # None could be used to unassign the group
-            groupToAssign = None if groupToAssign.isEmpty() else unicode(groupToAssign)
+            groupToAssign = groupToAssign if groupToAssign else None
             for hostName in self.getSelectedHosts():
                 self.hosts.assignGroup(hostName, groupToAssign)
             self.db.tryCommit()
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         self._processHostSubmit(resp)
 
     def groupsVisibilityChanged(self, checked):
-        currentGroup = unicode(self.sender().text())
+        currentGroup = str(self.sender().text())
         self.groups[currentGroup] = checked
         self.setHostList()
 
@@ -440,7 +440,7 @@ class MainWindow(QMainWindow):
                 if group is None:
                     group = unassignedGroupName
                 groupHeader = QtGui.QListWidgetItem(type=self.typeQListWidgetHeader)
-                groupLabel = QtGui.QLabel(unicode(group))
+                groupLabel = QtGui.QLabel(str(group))
                 groupLabel.setProperty('class', 'group-title')
                 self.ui.hostsList.addItem(groupHeader)
                 self.ui.hostsList.setItemWidget(groupHeader, groupLabel)
@@ -453,10 +453,10 @@ class MainWindow(QMainWindow):
     def slotConnectHost(self, item):
         if self.isHostListHeader(item):
             return
-        self.connectHost(unicode(item.text()))
+        self.connectHost(str(item.text()))
 
     def connectHost(self, hostId, frameless=False, screenIndex=None):
-        hostId = unicode(hostId)  # sometimes hostId comes as QString
+        hostId = str(hostId)  # sometimes hostId comes as QString
         tabPage = self.tabWidget.createTab(hostId)
         tabPage.reconnectionNeeded.connect(self.connectHost)
 
@@ -466,7 +466,7 @@ class MainWindow(QMainWindow):
         try:
             execCmd, opts = self.getCmd(tabPage, hostId)
         except LookupError:
-            logger.error(u"Host {} not found.".format(hostId))
+            logger.error("Host {} not found.".format(hostId))
             return
 
         ProcessManager.start(hostId, tabPage, execCmd, opts)
@@ -498,24 +498,22 @@ class MainWindow(QMainWindow):
 
     def restoreSettings(self):
         try:
-            self.restoreGeometry(self.config.getValue("geometry").toByteArray())
-            self.restoreState(self.config.getValue("windowState").toByteArray())
+            self.restoreGeometry(self.config.getValue("geometry"))
+            self.restoreState(self.config.getValue("windowState"))
         except Exception:
-            logger.debug("No settings to restore")
+            logger.info("No settings to restore")
 
         # restore tray icon state
-        trayIconVisibility = self.config.getValue('trayIconVisibility', "true").toBool()
+        trayIconVisibility = self.config.getBooleanValue('trayIconVisibility', True)
         self.tray.setVisible(trayIconVisibility)
-
-        self.showHostsInGroups = self.config.getValue('showHostsInGroups', 'false').toBool()
-
+        self.showHostsInGroups = self.config.getBooleanValue('showHostsInGroups', False)
         if self.tray.isVisible():
-            mainWindowVisibility = self.config.getValue('mainWindowVisibility', "true").toBool()
+            mainWindowVisibility = self.config.getBooleanValue('mainWindowVisibility', True)
             self.setVisible(mainWindowVisibility)
         else:  # it tray icon is not visible, always show main window
             self.show()
 
-        self.groups = {unicode(k): v for k, v in self.config.getValue('groups', {}).toPyObject().items()}
+        self.groups = {str(k): v for k, v in self.config.getValue('groups', {}).items()}
 
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:

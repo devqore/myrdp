@@ -69,8 +69,8 @@ class FreerdpClient(Client):
         """
         argsList = ["/%s:%s" % (k, v) for k, v in self.settings.items()]
         argsList.extend(self.args)
-        logger.debug(u"Running command:\n%s %s" % (self.executable, " ".join(
-            [unicode(arg) for arg in argsList if not unicode(arg).startswith("/p:")]
+        logger.debug("Running command:\n%s %s" % (self.executable, " ".join(
+            [str(arg) for arg in argsList if not str(arg).startswith("/p:")]
         )))
         return self.executable, argsList
 

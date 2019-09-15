@@ -231,10 +231,12 @@ class PageTab(QtGui.QWidget):
         proc = self.sender() 
         txt = proc.readAllStandardOutput()
         logger.debug(txt)
-        self.appendText(txt.data().rstrip('\n'))
+        self.appendText(txt)
 
     def appendText(self, text):
-        self.textEdit.append(text)
+        if isinstance(text, QtCore.QByteArray):
+            text = text.data().decode('utf8')
+        self.textEdit.append(text.rstrip('\n'))
 
     def slotStateChanged(self, state):
         # append text to the text area only when process has been stopped
@@ -317,7 +319,7 @@ class MyTabWidget(QtGui.QTabWidget):
         self.setDetached(True, widget, screenIndex)
 
     def getTabObjectName(self, tabName):
-        return u"p_%s" % tabName
+        return "p_%s" % tabName
 
     def createTab(self, tabName):
         # used for create unique object name (because title is unique)

@@ -39,14 +39,14 @@ class SettingsPage(QWidget):
     def selectFreerdpLocation(self):
         dialog = QFileDialog()
         result = dialog.getOpenFileName(self, "Freerdp location", directory='/usr/bin')
-        if result != QtCore.QString(u''):
+        if result != QtCore.QString(''):
             self.ui.freerdp_executable.setText(result)
 
     def selectDatabaseLocation(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.AnyFile)
         result = dialog.getSaveFileName(self, "Database location", filter="*.sqlite")
-        if result != QtCore.QString(u''):
+        if result != QtCore.QString(''):
             self.ui.database_location.setText(result)
 
     def saveSettings(self):

@@ -18,11 +18,9 @@ class CryptoKey(object):
 
     @staticmethod
     def getProcessedPassphrase(passphrase):
-        if passphrase == '':
+        if passphrase == '' or not passphrase:
             return None
-        elif isinstance(passphrase, unicode):
-            return passphrase.encode('utf8')
-        return passphrase
+        return passphrase.encode('utf8')
 
     def export(self, passphrase=None):
         passphrase = self.getProcessedPassphrase(passphrase)
@@ -33,14 +31,13 @@ class CryptoKey(object):
         try:
             self.key = RSA.importKey(key, passphrase)
         except ValueError:
-            raise ValueError(u"Wrong current password")
+            raise ValueError("Wrong current password")
         return self.key
 
     def encrypt(self, message):
-        if isinstance(message, unicode):
-            message = message.encode('utf8')
-
         cipher = PKCS1_OAEP.new(self.key)
+        if isinstance(message, str):
+            message = message.encode('utf8')
         encryptedMessage = cipher.encrypt(message)
         return base64.b64encode(encryptedMessage)
 
@@ -49,7 +46,9 @@ class CryptoKey(object):
         if encryptedMessage is None:
             return None
         decryptedMessage = cipher.decrypt(base64.b64decode(encryptedMessage))
-        return decryptedMessage.decode('utf8')
+        if isinstance(decryptedMessage, (bytes, bytearray)):
+            decryptedMessage = decryptedMessage.decode('utf8')
+        return decryptedMessage
 
     def load(self, filePath, passphrase=None):
         with open(filePath, 'rb') as f:
@@ -60,5 +59,5 @@ class CryptoKey(object):
         keyContent = self.export(passphrase)
         with open(filePath, 'wb') as f:
             f.write(keyContent)
-            os.chmod(filePath, 0600)
+            os.chmod(filePath, 0o600)
         return keyContent

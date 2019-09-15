@@ -44,7 +44,7 @@ def upgrade():
                     ).values(password=passwordToUpdate)
                 )
             except Exception as e:
-                logger.error(u"Error when trying to update host '{}'.".format(host.name))
+                logger.error("Error when trying to update host '{}'.".format(host.name))
                 raise e
 
 

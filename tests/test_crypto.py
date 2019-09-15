@@ -32,13 +32,13 @@ class CryptoTestCase(TestCase):
         self.assertRaises(ValueError, ck2.decrypt, encryptedMessage)
 
     def test_unicode(self):
-        unicodeMessage = u"łśźćżów~!@#$ '\"%^&*("
+        unicodeMessage = "łśźćżów~!@#$ '\"%^&*("
         ck = CryptoKey()
         encryptedMsg = ck.encrypt(unicodeMessage)
         self.assertEqual(ck.decrypt(encryptedMsg), unicodeMessage)
 
     def test_unicodePassphrase(self):
-        unicodePassphrase = u"łśźćżów~!@#$ '\"%^&*("
+        unicodePassphrase = "łśźćżów~!@#$ '\"%^&*("
         ck = CryptoKey()
         msg = ck.encrypt(self.testMessage)
         key = ck.export(unicodePassphrase)

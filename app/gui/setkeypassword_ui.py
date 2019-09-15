@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/setkeypassword.ui'
 #
-# Created by: PyQt4 UI code generator 4.12.1
+# Created by: PyQt4 UI code generator 4.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_SetKeyPasswordDialog(object):
     def setupUi(self, SetKeyPasswordDialog):
         SetKeyPasswordDialog.setObjectName(_fromUtf8("SetKeyPasswordDialog"))
-        SetKeyPasswordDialog.resize(353, 100)
+        SetKeyPasswordDialog.resize(353, 190)
         SetKeyPasswordDialog.setMaximumSize(QtCore.QSize(353, 190))
         self.verticalLayout_2 = QtGui.QVBoxLayout(SetKeyPasswordDialog)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))

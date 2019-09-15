@@ -10,4 +10,4 @@ class PasswordDialog(QDialog):
         self.ui.setupUi(self)
 
     def getPassword(self):
-        return unicode(self.ui.password.text())
+        return str(self.ui.password.text())

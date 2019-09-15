@@ -58,12 +58,14 @@ class HostConfigDialog(ConfigDialog):
             if value is None:
                 value = ''
 
+            value = str(value)
+
             if generateNewName and attribute == "name":
                 allNames = self.configObject.getAllHostsNames()
                 suffix = 0
                 newName = value
                 while newName in allNames:
-                    newName = u"{}_{}".format(value, suffix)
+                    newName = "{}_{}".format(value, suffix)
                     suffix += 1
                 value = newName
 
