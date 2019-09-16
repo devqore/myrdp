@@ -58,6 +58,8 @@ class HostConfigDialog(ConfigDialog):
             if value is None:
                 value = ''
 
+            value = str(value)
+
             if generateNewName and attribute == "name":
                 allNames = self.configObject.getAllHostsNames()
                 suffix = 0

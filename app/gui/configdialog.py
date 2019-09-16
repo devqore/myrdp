@@ -26,7 +26,7 @@ class ConfigDialog(QDialog):
             if field not in self.optionalAttributes:
                 raise ValueError("Complete the required fields")
             return None
-        return str(value)
+        return value
 
     def collectFieldsValues(self):
         attributesDict = {}
@@ -57,6 +57,9 @@ class ConfigDialog(QDialog):
 
             if value is None:
                 value = ''
+
+            if isinstance(value, (bytes, bytearray)):
+                value = value.decode('utf8')
 
             field.setText(value)
 

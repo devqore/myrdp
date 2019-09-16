@@ -18,9 +18,9 @@ class CryptoKey(object):
 
     @staticmethod
     def getProcessedPassphrase(passphrase):
-        if passphrase == '':
+        if passphrase == '' or not passphrase:
             return None
-        return passphrase
+        return passphrase.encode('utf8')
 
     def export(self, passphrase=None):
         passphrase = self.getProcessedPassphrase(passphrase)
@@ -36,6 +36,8 @@ class CryptoKey(object):
 
     def encrypt(self, message):
         cipher = PKCS1_OAEP.new(self.key)
+        if isinstance(message, str):
+            message = message.encode('utf8')
         encryptedMessage = cipher.encrypt(message)
         return base64.b64encode(encryptedMessage)
 
@@ -44,6 +46,8 @@ class CryptoKey(object):
         if encryptedMessage is None:
             return None
         decryptedMessage = cipher.decrypt(base64.b64decode(encryptedMessage))
+        if isinstance(decryptedMessage, (bytes, bytearray)):
+            decryptedMessage = decryptedMessage.decode('utf8')
         return decryptedMessage
 
     def load(self, filePath, passphrase=None):

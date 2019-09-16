@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         assignGroupDialog = AssignGroupDialog(groups)
         groupToAssign = assignGroupDialog.assign()
         if groupToAssign is not False:  # None could be used to unassign the group
-            groupToAssign = None if groupToAssign.isEmpty() else str(groupToAssign)
+            groupToAssign = groupToAssign if groupToAssign else None
             for hostName in self.getSelectedHosts():
                 self.hosts.assignGroup(hostName, groupToAssign)
             self.db.tryCommit()
