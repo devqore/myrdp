@@ -41,9 +41,9 @@ if __name__ == "__main__":
     app.focusChanged.connect(focusChanged)
 
     config = Config()
-    config.setLogLevel()
+    config.set_log_level()
 
-    db = Database(config.getConnectionString())
+    db = Database(config.get_connection_string())
     db.create()
     db.update()
 

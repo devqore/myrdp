@@ -42,6 +42,6 @@ class SetKeyPassword(QDialog):
 
         config = Config()
 
-        ck = config.getPrivateKey(str(currentPassword))
-        ck.save(config.privateKeyPath, str(newPassword))
+        ck = config.get_private_key(str(currentPassword))
+        ck.save(config.private_key_path, str(newPassword))
         logger.debug("Key exported")

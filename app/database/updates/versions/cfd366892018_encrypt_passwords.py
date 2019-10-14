@@ -31,7 +31,7 @@ hostsHelper = sa.Table(
 
 
 def upgrade():
-    cryptoKey = Config().getPrivateKey()
+    cryptoKey = Config().get_private_key()
     connection = op.get_bind()
 
     with connection.begin() as trans:

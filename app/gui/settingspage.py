@@ -17,17 +17,17 @@ class SettingsPage(QWidget):
         self.ui.save_button.clicked.connect(self.saveSettings)
 
         self.config = Config()
-        self.ui.database_location.setText(self.config.databaseLocation)
-        self.ui.freerdp_executable.setText(self.config.freerdpExecutable)
-        self.ui.freerdp_arguments.setText(self.config.freerdpArgs)
+        self.ui.database_location.setText(self.config.database_location)
+        self.ui.freerdp_executable.setText(self.config.freerdp_executable)
+        self.ui.freerdp_arguments.setText(self.config.freerdp_args)
 
         self.keyMenu = QMenu()
         self.keyMenu.addAction('Set master password', self.setKeyPassword)
         self.ui.master_key_button.setStyleSheet("QPushButton::menu-indicator {image: none;}")
         self.ui.master_key_button.setMenu(self.keyMenu)
 
-        self.ui.logging_level.addItems(self.config.loggingLevels)
-        currentItem = self.ui.logging_level.findText(self.config.logLevel)
+        self.ui.logging_level.addItems(self.config.logging_levels)
+        currentItem = self.ui.logging_level.findText(self.config.log_level)
         if currentItem != -1:
             self.ui.logging_level.setCurrentIndex(currentItem)
 
@@ -51,9 +51,9 @@ class SettingsPage(QWidget):
 
     def saveSettings(self):
         databaseLocationToSave = self.ui.database_location.text()
-        if self.config.databaseLocation != databaseLocationToSave:
-            self.config.setDatabaseLocation(self.ui.database_location.text())
+        if self.config.database_location != databaseLocationToSave:
+            self.config.set_database_location(self.ui.database_location.text())
             self.ui.information_label.setVisible(True)
-        self.config.setFreerdpExecutable(self.ui.freerdp_executable.text())
-        self.config.setFreerdpArgs(self.ui.freerdp_arguments.text())
-        self.config.setLogLevel(self.ui.logging_level.currentText())
+        self.config.set_freerdp_executable(self.ui.freerdp_executable.text())
+        self.config.set_freerdp_args(self.ui.freerdp_arguments.text())
+        self.config.set_log_level(self.ui.logging_level.currentText())

@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.config = Config()
-        self.db = Database(self.config.getConnectionString())
+        self.db = Database(self.config.get_connection_string())
 
         cryptoKey = self.getCryptoKey()
         self.hosts = Hosts(self.db, cryptoKey)
@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
 
     def getCryptoKey(self, passphrase=None):
         try:
-            return self.config.getPrivateKey(passphrase)
+            return self.config.get_private_key(passphrase)
         except ValueError:
             passwordDialog = PasswordDialog()
             retCode = passwordDialog.exec_()
@@ -481,7 +481,7 @@ class MainWindow(QMainWindow):
         winId = tabPage.x11.winId()
 
         # set remote desktop client, at this time works only with freerdp
-        remoteClientType, remoteClientOptions = self.config.getRdpClient()
+        remoteClientType, remoteClientOptions = self.config.get_rdp_client()
         remoteClient = ClientFactory(remoteClientType, **remoteClientOptions)
         remoteClient.setWindowParameters(winId, width, height)
         remoteClient.setUserAndPassword(host.user, host.password)
@@ -489,31 +489,31 @@ class MainWindow(QMainWindow):
         return remoteClient.getComposedCommand()
 
     def saveSettings(self):
-        self.config.setValue("geometry", self.saveGeometry())
-        self.config.setValue("windowState", self.saveState())
-        self.config.setValue('trayIconVisibility', self.tray.isVisible())
-        self.config.setValue('mainWindowVisibility', self.isVisible())
-        self.config.setValue('groups', self.groups)
-        self.config.setValue('showHostsInGroups', self.showHostsInGroups)
+        self.config.set_value("geometry", self.saveGeometry())
+        self.config.set_value("windowState", self.saveState())
+        self.config.set_value('trayIconVisibility', self.tray.isVisible())
+        self.config.set_value('mainWindowVisibility', self.isVisible())
+        self.config.set_value('groups', self.groups)
+        self.config.set_value('showHostsInGroups', self.showHostsInGroups)
 
     def restoreSettings(self):
         try:
-            self.restoreGeometry(self.config.getValue("geometry"))
-            self.restoreState(self.config.getValue("windowState"))
+            self.restoreGeometry(self.config.get_value("geometry"))
+            self.restoreState(self.config.get_value("windowState"))
         except Exception:
             logger.info("No settings to restore")
 
         # restore tray icon state
-        trayIconVisibility = self.config.getBooleanValue('trayIconVisibility', True)
+        trayIconVisibility = self.config.get_boolean_value('trayIconVisibility', True)
         self.tray.setVisible(trayIconVisibility)
-        self.showHostsInGroups = self.config.getBooleanValue('showHostsInGroups', False)
+        self.showHostsInGroups = self.config.get_boolean_value('showHostsInGroups', False)
         if self.tray.isVisible():
-            mainWindowVisibility = self.config.getBooleanValue('mainWindowVisibility', True)
+            mainWindowVisibility = self.config.get_boolean_value('mainWindowVisibility', True)
             self.setVisible(mainWindowVisibility)
         else:  # it tray icon is not visible, always show main window
             self.show()
 
-        self.groups = {str(k): v for k, v in self.config.getValue('groups', {}).items()}
+        self.groups = {str(k): v for k, v in self.config.get_value('groups', {}).items()}
 
     def closeEvent(self, event):
         if not ProcessManager.hasActiveProcess:

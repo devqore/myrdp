@@ -27,7 +27,7 @@ class Database(object):
         :param echo: echo SQL
         """
         if not engineString:
-            engineString = Config().getConnectionString()
+            engineString = Config().get_connection_string()
         self.engine = create_engine(engineString, echo=echo)
         Session = sessionmaker(bind=self.engine)
         self.alembicConfig = AlembicConfig(engineString).ctx
