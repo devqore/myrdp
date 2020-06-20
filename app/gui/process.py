@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore
 from app.log import logger
+from app.config import Config
 
 
 class ProcessManager(object):
@@ -40,6 +41,7 @@ class ProcessManager(object):
         process.start(*args, **kwargs)
         return process
 
+
 ProcessManager = ProcessManager()
 
 
@@ -49,6 +51,7 @@ class TabPageProcess(QtCore.QProcess):
         self.name = str(name)
         self.tabPage = tabPage
 
+        self.fixFrozenLDLibraryPath()
         self.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 
         self.stateChanged.connect(tabPage.slotStateChanged)
@@ -57,6 +60,28 @@ class TabPageProcess(QtCore.QProcess):
 
         tabPage.destroyed.connect(self.kill)
         tabPage.widgetClosed.connect(self.kill)
+
+    def fixFrozenLDLibraryPath(self):
+        """ method to avoid issues on sharing environment when starting xfreerdp """
+        if not Config.isFrozen():
+            return
+        env = QtCore.QProcessEnvironment.systemEnvironment()
+
+        ldKey = "LD_LIBRARY_PATH"
+        ldKeyOrig = "{}_ORIG".format(ldKey)
+
+        # if LD_LIBRARY_PATH will be just removed then will be restored,
+        # so needs to be set with an emtpy value
+        env.remove(ldKey)
+        ldValue = ""
+        if env.contains(ldKeyOrig):
+            ldValue = list(filter(
+                lambda x: x.startswith('{}='.format(ldKeyOrig)), env.toStringList())
+            )[0]
+            ldValue.replace("{}=".format(ldKeyOrig), '')
+
+        env.insert(ldKey, ldValue)
+        self.setProcessEnvironment(env)
 
     def processStopped(self):
         ProcessManager.delete(self)

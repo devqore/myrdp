@@ -36,10 +36,15 @@ class Config(object):
             return value
         return value.lower() in ("yes", "true", "1")
 
+    @staticmethod
+    def isFrozen():
+        # pyinstaller sets sys.frozen attribute
+        return getattr(sys, 'frozen', False)
+
+
     @property
     def mainDirectory(self):
-        # pyinstaller sets sys.frozen attribute
-        if getattr(sys, 'frozen', False):
+        if self.isFrozen():
             mainDirectory = os.path.dirname(sys.executable)
         else:
             mainDirectory = J(os.path.dirname(__file__), "..")

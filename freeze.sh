@@ -2,8 +2,8 @@
 set -e
 rm build/ -rf
 rm dist/ -rf
-. /opt/python3-venvs/myrdp/bin/activate
-export VERSION=`python3 -c "import app; print(app.__version__)"`
+export VERSION=$(python3 -c "import app; print(app.__version__)")
+echo $VERSION
 # ensure that PyQt4 is properly installed by trying to import PyQt4
 python3 -c "from PyQt4 import QtGui"
 export VERSIONED_NAME=myrdp-$VERSION

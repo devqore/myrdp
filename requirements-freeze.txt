@@ -1,4 +1,5 @@
 -r requirements.txt
+setuptools==41.2.0
 pyinstaller
 appdirs
 packaging

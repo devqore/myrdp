@@ -1,0 +1,20 @@
+---
+# used by vagrant to generate dist file
+- hosts: localhost
+  tasks:
+  - name: Install required packages
+    become: yes
+    package:
+      name:
+        - binutils
+        - python3-pip
+        - python3-pyqt4
+        - python3-virtualenv
+        - python3-dev
+        - virtualenv
+        - kde-style-breeze-qt4  # additional style
+      state: latest
+  - name: Install requirements
+    pip:
+      executable: pip3
+      requirements: "{{ playbook_dir }}/requirements-freeze.txt"

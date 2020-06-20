@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-vagrant up
-vagrant ssh -c "cd /home/vagrant/myrdp && /home/vagrant/myrdp/freeze.sh"
+vagrant up --provider=libvirt --provision
+vagrant ssh -c "cd /vagrant && /vagrant/freeze.sh"
 vagrant halt
