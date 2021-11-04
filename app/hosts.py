@@ -101,13 +101,13 @@ class Hosts(object):
         if hostFilter:
             result = result.filter(HostTable.name.like("%%{}%%".format(hostFilter)))
 
-        return sum(result, ())
+        return [str(v[0]) for v in result]
 
     def getGroupsList(self):
         """
         :return: list with group names
         """
-        return sum(self._db.session.query(GroupsTable.name), ())
+        return [str(v[0]) for v in self._db.session.query(GroupsTable.name)]
 
     def getGroupedHostNames(self, queryFilter=None):
         hostsList = self._db.session.query(HostTable.name, GroupsTable.name).outerjoin(

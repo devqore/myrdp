@@ -1,4 +1,4 @@
-SQLAlchemy
+SQLAlchemy==1.4.25
 # PyQt4 -- needed but can't be installed with pip
 alembic
 pycryptodomex
