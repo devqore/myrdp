@@ -87,7 +87,7 @@ class Hosts(object):
         """
         :return: list with host names
         """
-        hostsList = sum(self._db.session.query(HostTable.name), ())
+        hostsList = [str(v[0]) for v in self._db.session.query(HostTable.name)]
         return sorted(hostsList)
 
     def getHostsListByHostNameAndGroup(self, hostFilter=None, groupFilter=None):
