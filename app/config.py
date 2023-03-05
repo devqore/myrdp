@@ -5,7 +5,11 @@ import sys
 
 from app.log import logger
 from app.crypto import CryptoKey
-from PyQt4.QtCore import QSettings
+try:
+    from PyQt4.QtCore import QSettings
+except ModuleNotFoundError:
+    print("Ignoring QSettings import")
+
 J = os.path.join
 
 
