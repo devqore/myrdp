@@ -1,14 +1,9 @@
 MyRDP - Remote Desktop manager
 
-# Installation
-## Arch Linux
+> [!IMPORTANT]  
+> The  project is no longer maintained, to dump your host's configuration, you can use the script `scripts/dump_hosts_configuration.py`.
 
-Latest release is available in the aur.
-```bash
-yaourt -S myrdp
-```
-
-## Other distributions
+## Run from binaries
 
 Download tar.bz2 archive from [latest version](https://github.com/devqore/myrdp/releases/latest) in releases page
 ```bash
