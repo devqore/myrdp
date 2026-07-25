@@ -1,5 +1,5 @@
 -r requirements.txt
-setuptools==78.1.1
+setuptools==83.0.0
 pyinstaller
 appdirs
 packaging
